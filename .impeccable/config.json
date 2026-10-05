@@ -1,0 +1,36 @@
+{
+  "buildPath": "code",
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-05T18:34:33.502Z",
+        "reason": "Agent: isolated copies identify a false positive on the native daisyUI btn-neutral skip link. Actual white-on-neutral contrast is 8.468:1; the detector incorrectly inherits the cream page background. Mobile green brand separately increased to 20px bold. No value-specific selector is exposed."
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-05T18:46:12.959Z",
+        "reason": "User instruction: preserve the Terra palette of the supplied Stitch prototype. The page background #f5f4ef is an intentional documented Terra token, not a newly chosen generic palette."
+      },
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-05T18:46:13.016Z",
+        "reason": "Agent: finding comes from native daisyUI drawer and dock CSS. The app sidebar remains fixed at 256px and animates translate; the dock width transition applies only to its small absolutely positioned marker. No application width, height, padding or margin animation was introduced; native daisyUI behavior is a user constraint."
+      }
+    ]
+  }
+}

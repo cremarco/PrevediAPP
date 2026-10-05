@@ -1,0 +1,36 @@
+{
+  "generator": "built-in image_gen",
+  "fictional": true,
+  "avatars": [
+    {
+      "id": "anna",
+      "name": "Anna",
+      "file": "avatar-anna.webp",
+      "prompt": "avatar-anna.prompt.txt",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 1131152,
+      "original_sha256": "cb182fbd4e8e0a356edbedda5a9a31eddb7b1d5e4e71ba21b22610f3afe1e501"
+    },
+    {
+      "id": "marco",
+      "name": "Marco",
+      "file": "avatar-marco.webp",
+      "prompt": "avatar-marco.prompt.txt",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 943992,
+      "original_sha256": "ffd6c3e57ae17fb9cee27c655d7d8696b3e069d3d68557237b0c8d1b289cb1bd"
+    },
+    {
+      "id": "elena",
+      "name": "Elena",
+      "file": "avatar-elena.webp",
+      "prompt": "avatar-elena.prompt.txt",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 946844,
+      "original_sha256": "9d357a11b1b1f436c880d92c9752be4ec39fb23293aed4cbdad1ea100e8f61e9"
+    }
+  ]
+}

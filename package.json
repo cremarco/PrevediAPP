@@ -1,0 +1,20 @@
+{
+  "name": "prevediapp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tailwindcss -i ./src/styles.css -o ./assets/app.css --minify && node scripts/build.mjs",
+    "dev": "python3 -m http.server 4173 --bind 127.0.0.1",
+    "check": "node scripts/check.mjs",
+    "format": "prettier --write \"assets/**/*.js\" \"scripts/*.mjs\" \"tests/*.mjs\"",
+    "format:check": "prettier --check \"assets/**/*.js\" \"scripts/*.mjs\" \"tests/*.mjs\""
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.0",
+    "daisyui": "^5.7.47",
+    "esbuild": "0.28.2",
+    "prettier": "3.9.9",
+    "tailwindcss": "4.3.0"
+  }
+}

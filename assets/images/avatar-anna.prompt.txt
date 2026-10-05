@@ -1,0 +1,11 @@
+Use case: illustration-story
+Asset type: small illustrated community profile avatar in the PREVEDIApp wellness app, Terra visual identity.
+Primary request: Create ONE fictional adult person's avatar as a clean, friendly, polished 2D illustration, not a photograph.
+Composition/framing: Square canvas, centered front-facing head and upper shoulders. Head large, occupying about 65% of image height; hair, ears, face and shoulders stay inside the central 85% so a circular UI crop preserves the face. Designed to remain distinguishable at 40 pixels.
+Style/medium: Flat matte color blocks, simple rounded forms, restrained warm dark-brown outlines, minimal soft shading. Mature and welcoming, aligned with friendly illustrated nature companions. Clearly an illustrated demo profile.
+Scene/backdrop: Uniform pale warm ivory #F0EEE7 extending to every edge of the square, opaque, no frame or vignette.
+Color palette: Terra muted leaf green #4A7C59, earth brown #6B6358, warm ochre #C4A66A and ivory. Natural warm skin tones.
+Lighting/mood: Calm, approachable, gentle small smile, relaxed face.
+Text: None.
+Avoid: Typography, initials, logos, extra people, scenery, floating objects, photo realism, 3D, tiny ornamental detail, hard gradients, exaggerated cartoon anatomy, image collage or contact sheet.
+Subject: Fictional adult woman with fair warm skin, softly wavy auburn bob-length hair and a simple muted leaf-green top.

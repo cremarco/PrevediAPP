@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="it" data-theme="terra">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#4A7C59">
+  <meta name="description" content="PREVEDIApp: un piccolo passo ogni giorno per coltivare il tuo benessere. Diario, attività, quiz e il tuo Alberello.">
+  <title>Il mio percorso · PREVEDIApp</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/nunito-sans-400.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="assets/app.css">
+  <script type="module" src="assets/app.js"></script>
+</head>
+<body class="bg-base-200 font-sans text-base-content antialiased">
+  <a href="#main" class="btn btn-neutral fixed -top-24 left-4 z-[100] focus:top-4">Vai al contenuto</a>
+  <div class="drawer lg:drawer-open">
+    <input id="app-drawer" type="checkbox" class="drawer-toggle" aria-label="Apri o chiudi la navigazione">
+    <div class="drawer-content flex min-h-dvh min-w-0 flex-col">
+      <header class="shrink-0 border-b border-base-300">
+       <div class="navbar mx-auto min-h-18 w-full max-w-[1320px] px-5 sm:min-h-20 sm:px-7 xl:px-11">
+        <div class="navbar-start w-auto flex-1 gap-2">
+          <label for="app-drawer" class="btn btn-ghost btn-square lg:hidden" aria-label="Apri la navigazione" role="button" tabindex="0" aria-controls="desktop-nav" aria-expanded="false" data-drawer-trigger><span data-icon="bars-3"></span></label>
+          <a class="btn btn-ghost px-1 text-xl font-bold lg:hidden" href="#percorso">PREVEDI<span class="text-primary">App</span></a>
+          <span class="hidden text-sm text-base-content/85 lg:block" id="breadcrumb">Il mio percorso</span>
+        </div>
+        <div class="navbar-end w-auto gap-2 sm:gap-4">
+          <span class="hidden text-xs text-base-content/85 sm:inline" id="header-date"></span>
+          <a href="#notifiche" class="btn btn-ghost btn-circle" aria-label="Notifiche"><span class="indicator"><span class="indicator-item badge badge-accent badge-xs" id="notification-dot"></span><span data-icon="bell"></span></span></a>
+          <a href="#profilo" class="btn btn-ghost btn-circle" aria-label="Apri il profilo"><div class="avatar avatar-placeholder"><div class="w-9 rounded-full bg-primary/10 text-base-content"><span id="header-initial">P</span></div></div></a>
+        </div>
+       </div>
+      </header>
+      <div class="mx-auto max-w-[1320px] px-5 pt-5 sm:px-7 xl:px-11" id="storage-notice" hidden><div class="alert alert-warning alert-soft text-warning-content" role="status"><span data-icon="information-circle"></span><span id="storage-message"></span></div></div>
+      <main id="main" tabindex="-1" class="@container mx-auto w-full max-w-[1320px] flex-1 px-5 py-6 focus:outline-none sm:px-7 sm:py-9 xl:px-11"></main>
+      <footer class="footer sm:footer-horizontal mx-auto w-full max-w-[1320px] shrink-0 border-t border-base-300 px-5 pt-5 pb-[calc(7rem+env(safe-area-inset-bottom))] text-xs text-base-content/85 sm:px-7 lg:pb-6 xl:px-11">
+        <span>Un piccolo passo. Ogni giorno.</span><a class="link link-hover" href="#informazioni">Informazioni e fonti</a><span>I tuoi dati restano su questo dispositivo.</span>
+      </footer>
+    </div>
+    <div class="drawer-side z-50">
+      <label for="app-drawer" class="drawer-overlay" aria-label="Chiudi la navigazione"></label>
+      <aside class="flex min-h-full w-64 flex-col border-r border-base-300 bg-base-100 px-4 pt-7 pb-5" aria-label="Navigazione principale">
+        <a href="#percorso" class="btn btn-ghost justify-start gap-2 px-3 text-xl font-bold" aria-label="PREVEDIApp, il mio percorso"><span class="text-primary" data-icon="sun"></span><span>PREVEDI<span class="text-primary">App</span></span></a>
+        <p class="mt-1 mb-6 px-3 text-xs text-base-content/85">Coltiva il tuo benessere.</p>
+        <nav id="desktop-nav" aria-label="Tutte le sezioni"></nav>
+        <div class="mt-auto pt-6">
+          <a class="card card-side bg-accent/20" href="#assistente"><figure class="pl-2"><img src="assets/images/pigna.png" alt="" width="58" height="66" class="w-12 object-contain"></figure><div class="card-body gap-1 p-3"><strong class="text-xs">Un consiglio da Pigna?</strong><p class="text-xs text-base-content/85">Sono qui per accompagnarti.</p></div></a>
+          <a href="#profilo" class="btn btn-ghost mt-4 h-auto w-full justify-start gap-3 px-2 py-3"><div class="avatar avatar-placeholder"><div class="w-9 rounded-full bg-primary/10"><span id="sidebar-initial">P</span></div></div><span class="min-w-0 flex-1 text-left"><strong class="block truncate text-sm" id="sidebar-name">Il tuo spazio</strong><span class="block text-xs font-normal text-base-content/85">Profilo e preferenze</span></span><span data-icon="chevron-right"></span></a>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <nav class="dock border-t border-base-300 bg-base-100 text-base-content lg:hidden" id="mobile-nav" aria-label="Navigazione mobile"></nav>
+  <dialog id="entry-dialog" class="modal" aria-labelledby="dialog-title">
+    <div class="modal-box"><div id="dialog-content"></div></div>
+    <form method="dialog" class="modal-backdrop"><button aria-label="Chiudi finestra">Chiudi</button></form>
+  </dialog>
+  <div id="toast" class="toast toast-center toast-bottom z-[60] bottom-[calc(6rem+env(safe-area-inset-bottom))] max-w-[calc(100vw-2rem)] lg:bottom-5" hidden><div class="alert alert-success alert-soft shadow-sm sm:alert-horizontal" role="status" aria-live="polite"><span id="toast-message"></span><button id="toast-undo" class="btn btn-ghost btn-sm min-h-11" data-action="undo-delete" hidden>Annulla rimozione</button></div></div>
+  <noscript><div class="alert alert-warning m-5" role="alert">Attiva JavaScript per usare il diario e le attività di PREVEDIApp.</div></noscript>
+</body>
+</html>
