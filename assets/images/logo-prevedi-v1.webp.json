@@ -1,0 +1,4 @@
+{
+  "prompt": "Use case: precise-object-edit\nAsset type: final transparent PREVEDIApp botanical brand emblem.\nInput image: edit target, the pinecone with two leaves just generated.\nPrimary request: Clean up this exact emblem into a true flat two-color graphic.\nChange only the rendering: keep the silhouette, every curved scale, the two leaves, their proportions and positions, the central ochre scale and the square transparent canvas unchanged.\nReplace all gradients, texture and shading with completely uniform solid forest green #4A7C59 and uniform solid ochre #C4A66A. All colored interiors must be fully opaque, alpha 255. Only the empty background and clean gaps should be transparent, with standard edge anti-aliasing.\nRemove the tiny stray yellow and green fringe pixels around the central scale and leave crisp clean gaps.\nNo text, no new shapes, no badge, no shadows, no texture. Genuine transparent background.\n",
+  "createdAt": "2026-10-05T20:54:45.029Z"
+}

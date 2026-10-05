@@ -1,0 +1,10 @@
+Use case: logo-brand
+Asset type: standalone brand emblem for PREVEDIApp, an Italian daily wellbeing app with a virtual garden and a pinecone companion named Pigna.
+Primary request: Create a distinctive, polished botanical logo that belongs to this app's existing natural Terra visual identity.
+Subject: One compact upright pinecone, simplified into five broad overlapping rounded scales, with a short stem and two small leaves growing naturally from its top. The shape should suggest a cared-for seed becoming a living plant.
+Style/medium: Crisp flat graphic logo, vector-friendly clean curves, rounded geometry, balanced negative space; friendly and calm, grown-up rather than cartoon.
+Color palette: Forest green #4A7C59 as the dominant solid ink; muted honey ochre #C4A66A as one restrained accent in the middle scale. Use only these two colors, with true transparent negative spaces.
+Composition/framing: One isolated centered emblem on a square transparent canvas, occupying about 84% of the canvas height. Strong unified silhouette, generous clear gaps between the scales so it remains readable at 24–32px. Balanced visual weight.
+Text: No text or letters. The app will pair the emblem with its existing live HTML wordmark PREVEDIApp.
+Constraints: Genuinely transparent background with alpha; no filled canvas, no badge or enclosing circle. Keep the pinecone and its leaves a single compact mark. Render clean consistent edges and fully opaque colored shapes.
+Avoid: fine veins, microscopic details, faces, eyes, arms, cartoon shading, gradients, shadows, textures, mockups, extra symbols, medical crosses, watermarks, checkerboard painted into the image.

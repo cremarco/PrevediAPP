@@ -373,6 +373,51 @@
       }
     ],
     "illustrations": {
+      "brand": {
+        "generator": "built-in image_gen",
+        "documentation": "LOGO-ASSETS.md",
+        "source": "assets/images/logo-prevedi-v1.png",
+        "files": [
+          "assets/images/logo-prevedi-v1.webp",
+          "assets/images/favicon-prevedi-v1.png",
+          "assets/images/apple-touch-icon-prevedi-v1.png"
+        ],
+        "promptFiles": [
+          "assets/images/logo-prevedi-v1.initial.prompt.txt",
+          "assets/images/logo-prevedi-v1.prompt.txt"
+        ],
+        "provenanceFiles": [
+          "assets/images/logo-prevedi-v1.webp.json"
+        ],
+        "masterSizePx": 1254,
+        "uiSizePx": 256,
+        "faviconSizePx": 32,
+        "appleTouchSizePx": 192,
+        "transparentBackground": true,
+        "objectFit": "contain",
+        "display": {
+          "sidebarPx": 40,
+          "mobileHeaderPx": 36,
+          "mobileHeaderEmblemMinWidthPx": 360
+        },
+        "wordmark": {
+          "text": "PREVEDIApp",
+          "rendering": "HTML text",
+          "typography": "existing Nunito Sans",
+          "suffixColorToken": "primary"
+        },
+        "component": {
+          "library": "daisyUI 5",
+          "classes": [
+            "btn",
+            "btn-ghost"
+          ],
+          "destination": "#percorso",
+          "accessibleName": "PREVEDIApp, il mio percorso",
+          "imageAlt": ""
+        },
+        "functionalIcons": "Heroicons unchanged"
+      },
       "community": {
         "generator": "built-in image_gen",
         "fictional": true,
