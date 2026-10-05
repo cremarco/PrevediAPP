@@ -1,0 +1,9 @@
+Use case: illustration-story
+Asset type: isolated botanical vignette for the PREVEDIApp wellbeing interface, readable at 96 px.
+Scene/backdrop: genuinely transparent alpha background. No painted background, no checkerboard pattern, no floor or ground patch.
+Subject: three different little leafy plants growing together, each in its own small terracotta or muted ochre pot, beside one small forest-green watering can. One plant has broad rounded leaves, one has a few slender oval leaves and one is a small compact leafy sprout. The small grouping conveys tending a shared garden without any human figures.
+Style/medium: approachable botanical storybook illustration, gouache-inspired flat color fills with light shading. Clean rounded shapes, gentle dark brown outlines (#6B6358), simple confident contours and only restrained organic texture. Cohesive with friendly softly outlined botanical mascots, but the objects have no faces.
+Composition/framing: square canvas, compact balanced isolated vignette. Entire subject grouping visible and centered, fills about 80 percent of the canvas, with clear transparent padding on every side. Simple overlapping silhouettes that stay recognizable when reduced to 96 px. No enclosing circle or badge.
+Color palette: forest green #4A7C59, soft sage, muted ochre #C4A66A, warm earthy terracotta. The plants have slightly different natural green tones.
+Lighting/mood: calm and welcoming, softly shaded matte surfaces, no long shadows.
+Constraints: preserve genuine transparency, no text, no letters, no numerals, no logos, no medical symbols, no people, no characters, no faces, no hands, no watermark. Exactly three potted leafy plants and one watering can; do not add other objects, flowers, human figures or symbols. No photograph, no 3D render, no UI mockup.

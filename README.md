@@ -10,6 +10,8 @@ Le icone usano i nomi e gli SVG originali Heroicons, con scelte coerenti fra le 
 
 Anna, Marco ed Elena hanno avatar illustrati generati con Imagegen, inseriti nel componente `avatar` di daisyUI. Ogni persona mantiene lo stesso ritratto negli elenchi e nei messaggi. Asset, prompt e provenienza sono documentati in [AVATARS.md](AVATARS.md).
 
+Il [logo botanico](LOGO-ASSETS.md) e sei [vignette delle pagine](ILLUSTRATION-ASSETS.md) riprendono Terra con oggetti quotidiani e piccoli elementi del giardino. Le scene accompagnano alimentazione, movimento, sonno, calma, diario e Community; sono trasparenti, locali e riutilizzate fra schermate, con prompt e provenienza conservati.
+
 Il layout allinea navbar, contenuto e footer; le griglie si adattano alla larghezza effettiva disponibile. La chat tiene messaggi e scrittura nella stessa area, con suggerimenti laterali su desktop e successivi su telefono. Verifiche e anteprime sono in [LAYOUT-AUDIT.md](LAYOUT-AUDIT.md).
 
 I colori Terra distinguono categorie, selezioni, messaggi personali e ricompense. Bordi dei campi e avvisi sono più leggibili, con etichette e icone indipendenti dal colore. Ruoli, contrasti e verifiche sono in [COLOR-AUDIT.md](COLOR-AUDIT.md).

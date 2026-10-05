@@ -1,0 +1,9 @@
+Use case: illustration-story
+Asset type: compact transparent wellness illustration for PREVEDIApp, displayed around 96 pixels.
+Scene/backdrop: genuinely transparent background with real alpha, including all space around the objects; no white or colored background, no painted checkerboard.
+Subject: one pair of comfortable forest-green walking shoes beside a tiny winding earthen footpath and two simple leafy sprigs. The shoes should feel soft, ordinary and approachable, with rounded toes and simple visible soles; a few broad lace details are enough. The short path curves gently behind the shoes and ends within the vignette, conveying an everyday walk.
+Style/medium: approachable botanical storybook gouache and flat illustration, clean rounded shapes, smooth organic dark brown outlines in #6B6358, light restrained shading in color fills, matte earthy finish. A friendly calm style with bold clear silhouettes, like simple hand-painted botanical mascots, but only inanimate objects and plants.
+Composition/framing: square canvas; compact balanced isolated vignette centered in the canvas, all objects arranged close together and fully visible. The combined motif occupies about 80 percent of the canvas with comfortable transparent margin. No enclosing circle or badge. Favor strong shapes that remain clear at 96 pixels, avoid tiny decoration.
+Color palette: forest green #4A7C59 and sage for shoes and leaves, warm cream for soles and laces, muted ochre #C4A66A for the tiny earthen path. Natural dark brown outlines.
+Mood: gentle, grounded and everyday.
+Constraints: no text, logo, watermark, faces or characters; no person, legs, medical symbols, claims, sporty achievement cues, trophy or performance measurements; no background landscape or long cast shadows. Generate a new illustration.

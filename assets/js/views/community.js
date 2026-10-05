@@ -1,5 +1,13 @@
 import { localDate } from "../../data.js";
-import { icon, esc, heading, avatar, card, field } from "../ui/components.js";
+import {
+  icon,
+  esc,
+  heading,
+  avatar,
+  card,
+  field,
+  illustration,
+} from "../ui/components.js";
 
 const communityAvatars = {
   anna: "assets/images/avatar-anna.webp",
@@ -19,14 +27,12 @@ export function community({ state, ui }) {
   const groups = [
     {
       id: "walkers",
-      icon: "bolt",
       name: "Un passo nel verde",
       members: 24,
       desc: "Un gruppo per chi ama camminare e trovare nuove idee per muoversi.",
     },
     {
       id: "cooks",
-      icon: "chart-pie",
       name: "Il piatto delle idee",
       members: 18,
       desc: "Ingredienti di stagione, abbinamenti e piccoli esperimenti in cucina.",
@@ -36,12 +42,15 @@ export function community({ state, ui }) {
     .map((g) =>
       card(
         g.name,
-        `<div class="flex items-center gap-3">${avatar(icon(g.icon))}<span class="text-xs text-base-content/85">${g.members + (state.joined.includes(g.id) ? 1 : 0)} partecipanti di esempio</span></div><p class="text-sm text-base-content/85">${g.desc}</p>`,
-        `<button class="btn btn-outline ${state.joined.includes(g.id) ? "btn-primary btn-active" : ""}" data-action="join-group" data-id="${g.id}" aria-pressed="${state.joined.includes(g.id)}">${icon(state.joined.includes(g.id) ? "check" : "plus")}${state.joined.includes(g.id) ? "Nel tuo percorso · Esci" : "Unisciti al gruppo"}</button>`,
+        `<p class="text-xs text-base-content/85">${g.members + (state.joined.includes(g.id) ? 1 : 0)} partecipanti di esempio</p><p class="text-sm text-base-content/85">${g.desc}</p>`,
+        `<button class="btn btn-outline h-auto min-h-11 max-w-full py-2 whitespace-normal ${state.joined.includes(g.id) ? "btn-primary btn-active" : ""}" data-action="join-group" data-id="${g.id}" aria-pressed="${state.joined.includes(g.id)}">${icon(state.joined.includes(g.id) ? "check" : "plus")}${state.joined.includes(g.id) ? "Nel tuo percorso · Esci" : "Unisciti al gruppo"}</button>`,
+        "bg-base-100",
+        "",
+        g.id === "walkers" ? "attivita" : "alimentazione",
       ),
     )
     .join("");
-  const people = `<p class="text-sm text-base-content/85">Un gesto simbolico per incoraggiare chi cammina con te.</p><ul class="list">${[
+  const people = `<div class="flex items-center gap-4"><figure class="shrink-0">${illustration("community", "size-20 sm:size-28")}</figure><p class="text-sm text-base-content/85">Un gesto simbolico per incoraggiare chi cammina con te.</p></div><ul class="list">${[
     ["anna", "Anna", "Una passeggiata alla volta"],
     ["marco", "Marco", "Nuove idee in cucina"],
     ["elena", "Elena", "Un momento di calma ogni giorno"],

@@ -27,14 +27,36 @@ export const avatar = (content, skin = "bg-primary/10") =>
 export const titleRow = (title, action = "", id = "") =>
   `<div class="flex flex-wrap items-center justify-between gap-3"><h2 class="card-title font-serif text-xl font-medium" ${id ? `id="${id}"` : ""}>${title}</h2>${action}</div>`;
 
+const illustrationSubjects = {
+  alimentazione: "nutrition",
+  attivita: "movement",
+  sonno: "sleep",
+  stress: "calm",
+  diario: "journal",
+  community: "community",
+};
+
+// Decorative, local assets: controls keep their own Heroicons and accessible names.
+export function illustration(
+  kind,
+  cls = "size-16 min-[480px]:size-24 sm:size-36",
+) {
+  if (!Object.hasOwn(illustrationSubjects, kind)) return "";
+  return `<img src="assets/images/scene-${illustrationSubjects[kind]}-v1.webp" alt="" width="512" height="512" class="${cls} shrink-0 object-contain" loading="lazy" decoding="async" data-illustration="${kind}">`;
+}
+
+export const illustratedTitle = (title, kind) =>
+  `<div class="flex items-center gap-4"><h2 class="card-title min-w-0 flex-1 font-serif text-xl font-medium">${title}</h2><figure class="shrink-0">${illustration(kind, "size-12 sm:size-20")}</figure></div>`;
+
 export const card = (
   title,
   body,
   actions = "",
   skin = "bg-base-100",
   attrs = "",
+  scene = "",
 ) =>
-  `<section class="card card-border min-w-0 ${skin}" ${attrs}><div class="card-body gap-5 p-5 sm:p-6">${title ? titleRow(title) : ""}${body}${actions ? `<div class="card-actions items-center gap-3">${actions}</div>` : ""}</div></section>`;
+  `<section class="card card-border min-w-0 ${scene ? "card-side" : ""} ${skin}" ${attrs}>${scene ? `<figure class="shrink-0 pl-4 sm:pl-6">${illustration(scene)}</figure>` : ""}<div class="card-body min-w-0 gap-5 p-5 sm:p-6">${title ? titleRow(title) : ""}${body}${actions ? `<div class="card-actions items-center gap-3">${actions}</div>` : ""}</div></section>`;
 
 export const link = (route, label, symbol = "arrow-right") =>
   `<a class="btn btn-ghost h-auto min-h-11 justify-start px-0 text-base-content" href="#${route}">${label}${icon(symbol)}</a>`;

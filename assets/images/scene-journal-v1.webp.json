@@ -1,0 +1,21 @@
+{
+  "prompt": "Use case: illustration-story\nAsset type: isolated botanical vignette for the PREVEDIApp wellbeing interface, readable at 96 px.\nScene/backdrop: genuinely transparent alpha background. No painted background, no checkerboard pattern, no floor or ground patch.\nSubject: an open blank journal with a forest-green cover, a muted ochre pencil resting beside it, and one tiny leafy sprout. The journal pages are completely blank and unruled: no writing, no numbers, no icons and no charts.\nStyle/medium: approachable botanical storybook illustration, gouache-inspired flat color fills with light shading. Clean rounded shapes, gentle dark brown outlines (#6B6358), simple confident contours and only restrained organic texture. Cohesive with friendly softly outlined botanical mascots, but the objects have no faces.\nComposition/framing: square canvas, compact balanced isolated vignette. Entire subject grouping visible and centered, fills about 80 percent of the canvas, with clear transparent padding on every side. Simple overlapping silhouettes that stay recognizable when reduced to 96 px. No enclosing circle or badge.\nColor palette: forest green #4A7C59 for the cover, soft sage and forest green for the sprout, muted ochre #C4A66A for the pencil, warm pale ivory for the pages and restrained earthy accents.\nLighting/mood: calm and welcoming, softly shaded matte surfaces, no long shadows.\nConstraints: preserve genuine transparency, no text, no letters, no numerals, no logos, no medical symbols, no people, no characters, no faces, no hands, no watermark. Do not add any objects beyond the open journal, one pencil and one tiny leafy sprout. No photograph, no 3D render, no UI mockup.",
+  "createdAt": "2026-10-05T21:19:16.739Z",
+  "generationTool": "OpenAI built-in image_gen.imagegen",
+  "generationMode": "new image; transparent_background=true; no reference images",
+  "generatedOriginal": "/Users/marco/.codex/generated_images/01a10dea-c916-7812-8226-4b32b793e7e0/exec-73921421-ad12-4fb8-9b8d-e738a9f97c4d.png",
+  "sourceMaster": "output/illustration-source/scene-journal-v1.png",
+  "promptFile": "assets/images/scene-journal-v1.prompt.txt",
+  "conversion": {
+    "size": [
+      512,
+      512
+    ],
+    "mode": "RGBA",
+    "format": "WebP",
+    "quality": 88,
+    "method": 6,
+    "resampling": "LANCZOS",
+    "alpha": "preserved; no chroma-keying or cropping"
+  }
+}

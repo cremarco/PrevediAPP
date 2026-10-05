@@ -1,5 +1,13 @@
 import { localDate, quizSets } from "../../data.js";
-import { icon, esc, heading, avatar, card, field } from "../ui/components.js";
+import {
+  icon,
+  esc,
+  heading,
+  avatar,
+  card,
+  field,
+  illustration,
+} from "../ui/components.js";
 
 import { riskQuestions } from "../session.js";
 
@@ -15,7 +23,7 @@ export function quiz({ state, ui }) {
   const set = quizSets[quizCategory],
     q = set.questions[quizIndex];
   if (quizFinished)
-    return `<div class="mx-auto max-w-3xl">${heading("Un’idea nuova da portare con te.", "Il tuo quiz è completo.")}${card("", `<div class="flex flex-col items-center gap-5 py-4 text-center">${avatar(icon("trophy"), "bg-accent/15")}<h2>${quizCorrect === 3 ? "Hai coltivato nuove conoscenze." : "Ogni domanda è un’occasione."}</h2><p>${quizCorrect} risposte corrette su ${set.questions.length}. ${state.awards.some((a) => a.id === "quiz:" + quizCategory && a.date === localDate()) ? "Il quiz di oggi è registrato: +20 foglie, una volta al giorno." : ""}</p></div>`, `<a class="btn btn-primary" href="#${quizCategory}">Torna al tuo percorso ${icon("arrow-right")}</a><button class="btn btn-ghost" data-action="quiz-restart">Riprova il quiz</button><a class="btn btn-outline" href="#progressi">Le mie scoperte</a>`)}</div>`;
+    return `<div class="mx-auto max-w-3xl">${heading("Un’idea nuova da portare con te.", "Il tuo quiz è completo.")}${card("", `<div class="flex flex-col items-center gap-5 py-4 text-center"><figure>${illustration("diario", "size-28 sm:size-36")}</figure><h2>${quizCorrect === 3 ? "Hai coltivato nuove conoscenze." : "Ogni domanda è un’occasione."}</h2><p>${quizCorrect} risposte corrette su ${set.questions.length}. ${state.awards.some((a) => a.id === "quiz:" + quizCategory && a.date === localDate()) ? "Il quiz di oggi è registrato: +20 foglie, una volta al giorno." : ""}</p></div>`, `<a class="btn btn-primary" href="#${quizCategory}">Torna al tuo percorso ${icon("arrow-right")}</a><button class="btn btn-ghost" data-action="quiz-restart">Riprova il quiz</button><a class="btn btn-outline" href="#progressi">Le mie scoperte</a>`)}</div>`;
   const options = q.a
     .map((a, i) => {
       let skin =

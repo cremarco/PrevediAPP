@@ -373,6 +373,271 @@
       }
     ],
     "illustrations": {
+      "pageScenes": {
+        "generator": "built-in image_gen",
+        "date": "2026-10-05",
+        "documentation": "ILLUSTRATION-ASSETS.md",
+        "style": "Estensione botanica del mondo Terra esistente; oggetti quotidiani con contorni marroni morbidi e superfici matte, senza nuovi personaggi.",
+        "masterSizePx": 1254,
+        "uiSizePx": 512,
+        "totalBytes": 318918,
+        "transparentBackground": true,
+        "objectFit": "contain",
+        "loading": "lazy",
+        "decoding": "async",
+        "imageAlt": "",
+        "provenance": {
+          "exactPromptFiles": true,
+          "webpSidecarPromptMatches": true,
+          "masterEmbeddedPromptKey": "impeccable:prompt",
+          "masterEmbeddedPromptMatches": true,
+          "masterDirectory": "output/illustration-source/",
+          "mastersShipped": false,
+          "conversion": "Resize and WebP encode; generated alpha preserved."
+        },
+        "component": {
+          "source": "assets/js/ui/components.js",
+          "library": "daisyUI 5",
+          "helpers": [
+            "illustration()",
+            "illustratedTitle()",
+            "card() optional scene argument"
+          ],
+          "allowedKinds": [
+            "alimentazione",
+            "attivita",
+            "sonno",
+            "stress",
+            "diario",
+            "community"
+          ],
+          "unknownKindResult": "empty string",
+          "cardStructure": "card card-side > figure + card-body",
+          "titleStructure": "card-title + figure",
+          "functionalIcons": "Heroicons unchanged"
+        },
+        "display": {
+          "cardSide": [
+            {
+              "minViewportWidthPx": 0,
+              "sizePx": 64
+            },
+            {
+              "minViewportWidthPx": 480,
+              "sizePx": 96
+            },
+            {
+              "minViewportWidthPx": 640,
+              "sizePx": 144
+            }
+          ],
+          "journeyTile": [
+            {
+              "minViewportWidthPx": 0,
+              "sizePx": 56
+            },
+            {
+              "minViewportWidthPx": 640,
+              "sizePx": 64
+            }
+          ],
+          "illustratedTitle": [
+            {
+              "minViewportWidthPx": 0,
+              "sizePx": 48
+            },
+            {
+              "minViewportWidthPx": 640,
+              "sizePx": 80
+            }
+          ],
+          "profile": [
+            {
+              "minViewportWidthPx": 0,
+              "sizePx": 64
+            },
+            {
+              "minViewportWidthPx": 640,
+              "sizePx": 96
+            }
+          ],
+          "quizCompletion": [
+            {
+              "minViewportWidthPx": 0,
+              "sizePx": 112
+            },
+            {
+              "minViewportWidthPx": 640,
+              "sizePx": 144
+            }
+          ],
+          "communityGarden": [
+            {
+              "minViewportWidthPx": 0,
+              "sizePx": 80
+            },
+            {
+              "minViewportWidthPx": 640,
+              "sizePx": 112
+            }
+          ]
+        },
+        "scenes": [
+          {
+            "id": "nutrition",
+            "kind": "alimentazione",
+            "subject": "Verdure, pane e acqua",
+            "file": "assets/images/scene-nutrition-v1.webp",
+            "promptFile": "assets/images/scene-nutrition-v1.prompt.txt",
+            "provenanceFile": "assets/images/scene-nutrition-v1.webp.json",
+            "sourceMaster": "output/illustration-source/scene-nutrition-v1.png",
+            "bytes": 70336,
+            "placements": [
+              {
+                "route": "alimentazione",
+                "placement": "intro card-side",
+                "display": "cardSide"
+              },
+              {
+                "route": "percorso",
+                "placement": "category tile",
+                "display": "journeyTile"
+              },
+              {
+                "route": "piatto",
+                "placement": "card title",
+                "display": "illustratedTitle"
+              },
+              {
+                "route": "frigo",
+                "placement": "pantry card title",
+                "display": "illustratedTitle"
+              },
+              {
+                "route": "community",
+                "placement": "cooks group card-side",
+                "display": "cardSide"
+              }
+            ]
+          },
+          {
+            "id": "movement",
+            "kind": "attivita",
+            "subject": "Scarpe da passeggio e sentiero",
+            "file": "assets/images/scene-movement-v1.webp",
+            "promptFile": "assets/images/scene-movement-v1.prompt.txt",
+            "provenanceFile": "assets/images/scene-movement-v1.webp.json",
+            "sourceMaster": "output/illustration-source/scene-movement-v1.png",
+            "bytes": 55846,
+            "placements": [
+              {
+                "route": "attivita",
+                "placement": "intro card-side",
+                "display": "cardSide"
+              },
+              {
+                "route": "percorso",
+                "placement": "category tile",
+                "display": "journeyTile"
+              },
+              {
+                "route": "community",
+                "placement": "walkers group card-side",
+                "display": "cardSide"
+              }
+            ]
+          },
+          {
+            "id": "sleep",
+            "kind": "sonno",
+            "subject": "Cuscino, coperta, libro e luna",
+            "file": "assets/images/scene-sleep-v1.webp",
+            "promptFile": "assets/images/scene-sleep-v1.prompt.txt",
+            "provenanceFile": "assets/images/scene-sleep-v1.webp.json",
+            "sourceMaster": "output/illustration-source/scene-sleep-v1.png",
+            "bytes": 41202,
+            "placements": [
+              {
+                "route": "sonno",
+                "placement": "intro card-side",
+                "display": "cardSide"
+              },
+              {
+                "route": "percorso",
+                "placement": "category tile",
+                "display": "journeyTile"
+              }
+            ]
+          },
+          {
+            "id": "calm",
+            "kind": "stress",
+            "subject": "Tazza, pianta e due ciottoli",
+            "file": "assets/images/scene-calm-v1.webp",
+            "promptFile": "assets/images/scene-calm-v1.prompt.txt",
+            "provenanceFile": "assets/images/scene-calm-v1.webp.json",
+            "sourceMaster": "output/illustration-source/scene-calm-v1.png",
+            "bytes": 49754,
+            "placements": [
+              {
+                "route": "stress",
+                "placement": "intro card-side",
+                "display": "cardSide"
+              },
+              {
+                "route": "percorso",
+                "placement": "category tile",
+                "display": "journeyTile"
+              }
+            ]
+          },
+          {
+            "id": "journal",
+            "kind": "diario",
+            "subject": "Diario senza scritte, matita e germoglio",
+            "file": "assets/images/scene-journal-v1.webp",
+            "promptFile": "assets/images/scene-journal-v1.prompt.txt",
+            "provenanceFile": "assets/images/scene-journal-v1.webp.json",
+            "sourceMaster": "output/illustration-source/scene-journal-v1.png",
+            "bytes": 35194,
+            "placements": [
+              {
+                "route": "diario",
+                "placement": "card title",
+                "display": "illustratedTitle"
+              },
+              {
+                "route": "profilo",
+                "placement": "profile introduction",
+                "display": "profile"
+              },
+              {
+                "route": "quiz/<categoria>",
+                "state": "complete",
+                "placement": "completion figure",
+                "display": "quizCompletion"
+              }
+            ]
+          },
+          {
+            "id": "community",
+            "kind": "community",
+            "subject": "Tre piante e un annaffiatoio",
+            "file": "assets/images/scene-community-v1.webp",
+            "promptFile": "assets/images/scene-community-v1.prompt.txt",
+            "provenanceFile": "assets/images/scene-community-v1.webp.json",
+            "sourceMaster": "output/illustration-source/scene-community-v1.png",
+            "bytes": 66586,
+            "placements": [
+              {
+                "route": "community",
+                "placement": "community garden explanation",
+                "display": "communityGarden"
+              }
+            ]
+          }
+        ]
+      },
       "brand": {
         "generator": "built-in image_gen",
         "documentation": "LOGO-ASSETS.md",

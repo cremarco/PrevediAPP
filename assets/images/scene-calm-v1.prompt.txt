@@ -1,0 +1,9 @@
+Use case: illustration-story
+Asset type: isolated botanical vignette for the PREVEDIApp wellbeing interface, readable at 96 px.
+Scene/backdrop: genuinely transparent alpha background. No painted background, no checkerboard pattern, no floor or ground patch.
+Subject: one simple sage-green ceramic teacup on a saucer beside a small leafy plant in a warm terracotta pot, with exactly two smooth pebbles. The grouping conveys a quiet pause and breathing space without any healing claims.
+Style/medium: approachable botanical storybook illustration, gouache-inspired flat color fills with light shading. Clean rounded shapes, gentle dark brown outlines (#6B6358), simple confident contours and only restrained organic texture. Cohesive with friendly softly outlined botanical mascots, but the objects have no faces.
+Composition/framing: square canvas, compact balanced isolated vignette. Entire subject grouping visible and centered, fills about 80 percent of the canvas, with clear transparent padding on every side. Simple overlapping silhouettes that stay recognizable when reduced to 96 px. No enclosing circle or badge.
+Color palette: forest green #4A7C59, soft sage, muted ochre #C4A66A, warm earthy terracotta, natural pale pebble tones.
+Lighting/mood: calm and welcoming, softly shaded matte surfaces, no long shadows.
+Constraints: preserve genuine transparency, no text, no letters, no numerals, no logos, no medical symbols, no people, no characters, no faces, no hands, no watermark. Do not add any objects beyond the teacup, saucer, one potted plant and two pebbles. No photograph, no 3D render, no UI mockup.

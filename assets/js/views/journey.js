@@ -17,6 +17,7 @@ import {
   stats,
   pointsPill,
   alberello,
+  illustration,
 } from "../ui/components.js";
 import { wellnessPalette } from "../config.js";
 import {
@@ -57,7 +58,7 @@ export function dashboard({ state }) {
  ]
    .map(
      ([id, sym, title, text]) =>
-       `<a class="card card-border ${wellnessPalette[id].surface} transition-colors hover:bg-base-100" href="#${id}"><div class="card-body gap-3 p-4 sm:p-5"><div class="flex items-center justify-between">${icon(sym, wellnessPalette[id].icon)}${icon("arrow-right", "size-4")}</div><h3 class="card-title break-words font-serif text-base font-medium">${title}</h3><p class="text-xs text-base-content/85">${text}</p></div></a>`,
+       `<a class="card card-border ${wellnessPalette[id].surface} transition-colors hover:bg-base-100" href="#${id}"><div class="card-body gap-3 p-4 sm:p-5"><div class="flex items-center justify-between gap-2">${icon(sym, wellnessPalette[id].icon)}${illustration(id, "size-14 sm:size-16")}${icon("arrow-right", "size-4")}</div><h3 class="card-title break-words font-serif text-base font-medium">${title}</h3><p class="text-xs text-base-content/85">${text}</p></div></a>`,
    )
    .join("")}</div>
  <aside class="card mt-6 bg-accent/20 sm:card-side"><figure class="px-5 pt-5 sm:py-5 sm:pr-0"><img src="assets/images/pigna.png" alt="" width="75" height="86" class="h-20 w-20 object-contain"></figure><div class="card-body gap-2 p-5"><h3 class="card-title font-serif text-lg font-medium">Non serve fare tutto, basta cominciare.</h3><p class="text-sm text-base-content/85">Sono Pigna, la tua compagna di percorso. Troviamo insieme un piccolo gesto per oggi?</p><div class="card-actions">${link("assistente", "Parla con Pigna")}</div></div></aside>`;
@@ -132,10 +133,12 @@ export function progress({ state, ui }) {
     ],
     [report.registeredDays, "giorni registrati", `su ${report.period} giorni`],
   ])}${!report.registeredDays ? `<p class="text-sm text-base-content/85">Le attività che aggiungi al diario compariranno qui. I giorni senza una registrazione non hanno un valore rilevato.</p>` : ""}<ul class="list">${report.dates.map((date, i) => `<li class="list-row grid-cols-[3.5rem_1fr_auto] items-center px-0 py-3"><span class="text-xs ${date === localDate() ? "font-bold" : ""}">${dateLabel.format(new Date(date + "T12:00:00"))}</span><progress class="progress progress-primary w-full" value="${report.values[i]}" max="${max}" aria-label="${config.label} del ${date}: ${numberLabel.format(report.values[i])} ${config.unit}"></progress><span class="text-xs tabular-nums">${report.values[i] ? `${numberLabel.format(report.values[i])} ${config.unit}` : "—"}</span></li>`).join("")}</ul><p class="text-xs text-base-content/85">${goal ? `Obiettivo personale: ${goal} ${config.unit} al giorno. ` : ""}${report.type === "sleep" ? "Se hai più registrazioni nello stesso giorno, viene usata l’ultima." : "Le quantità sommano le registrazioni di ogni giorno."}</p>`;
-  const tree = `${stats([
-    [points, "foglie raccolte"],
-    [Math.floor(points / 100) + 1, "livello di crescita"],
-  ])}<progress class="progress progress-primary w-full" value="${points % 100}" max="100" aria-label="Progressi di Alberello"></progress><p class="text-sm text-base-content/85">Le foglie celebrano la costanza. Non misurano la tua salute o la glicemia.</p>`;
+  const tree = `<figure>${alberello(state, "size-28 sm:size-36")}</figure>${stats(
+    [
+      [points, "foglie raccolte"],
+      [Math.floor(points / 100) + 1, "livello di crescita"],
+    ],
+  )}<progress class="progress progress-primary w-full" value="${points % 100}" max="100" aria-label="Progressi di Alberello"></progress><p class="text-sm text-base-content/85">Le foglie celebrano la costanza. Non misurano la tua salute o la glicemia.</p>`;
   const learning = `<ul class="list">${Object.entries(quizSets)
     .map(([category, quiz]) => {
       const result = quizSummary(state, category);

@@ -1,0 +1,9 @@
+Use case: illustration-story
+Asset type: compact transparent wellness illustration for PREVEDIApp, displayed around 96 pixels.
+Scene/backdrop: genuinely transparent background with real alpha, including all space around the objects; no white or colored background, no painted checkerboard.
+Subject: a soft sage pillow with a gently folded light blanket, a small closed bedtime book, and a muted ochre crescent with exactly two tiny stars nearby. The pillow and blanket should have large soft rounded folds; the book is plainly closed with no title, lettering or symbol. The crescent and stars quietly suggest bedtime while staying close to the grouped objects.
+Style/medium: approachable botanical storybook gouache and flat illustration, clean rounded shapes, smooth organic dark brown outlines in #6B6358, light restrained shading in color fills, matte earthy finish. A friendly calm style with bold clear silhouettes, like simple hand-painted botanical mascots, but only inanimate objects.
+Composition/framing: square canvas; compact balanced isolated vignette centered in the canvas, all objects arranged close together and fully visible. The combined motif occupies about 80 percent of the canvas with comfortable transparent margin. No enclosing circle or badge. Favor strong shapes that remain clear at 96 pixels, avoid tiny decoration.
+Color palette: forest green #4A7C59 and sage for pillow and book, warm pale cream for the blanket and book pages, muted ochre #C4A66A for crescent and stars. Natural dark brown outlines.
+Mood: quiet, restful and familiar.
+Constraints: no text, logo, watermark, faces or characters; no medical symbols, claims, numbers or sleep measurement; no bed, room, background landscape or long cast shadows. Generate a new illustration.

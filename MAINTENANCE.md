@@ -92,6 +92,14 @@ I test QA non scrivono nei salvataggi delle anteprime dell’utente. La build è
 
 ## Misure dopo il completamento
 
-La versione estesa ha 71.212 byte JavaScript richiesti per aprire il percorso e 113.821 byte in tutte le schermate, non compressi. Il CSS compilato è 127.600 byte. I tre nuovi giardini WebP aggiungono complessivamente circa 134 kB e vengono usati solo se selezionati. Il ripristino e le schermate secondarie restano caricati su richiesta. Il rapporto `.impeccable/review/completion/metrics.json` deriva dal grafo della build corrente.
+La versione al completamento, prima delle successive grafiche di pagina, ha 71.212 byte JavaScript richiesti per aprire il percorso e 113.821 byte in tutte le schermate, non compressi. Il CSS compilato è 127.600 byte. I tre nuovi giardini WebP aggiungono complessivamente circa 134 kB e vengono usati solo se selezionati. Il ripristino e le schermate secondarie restano caricati su richiesta. Il rapporto `.impeccable/review/completion/metrics.json` conserva le misure di quella build.
 
 La nuova verifica copre 17 route a 1440 × 1000, 1280 × 1000 e 390 × 844: 51 osservazioni senza overflow orizzontale. I flussi completati, le prove native e i limiti del prototipo sono in [PROTOTYPE-COMPLETION.md](PROTOTYPE-COMPLETION.md).
+
+## Grafiche delle pagine
+
+`illustration()` risolve una lista chiusa di sei WebP locali. `illustratedTitle()` mantiene gli accenti accanto ai titoli; l’argomento opzionale `scene` di `card()` usa le parti native daisyUI `figure` e `card-body`. I componenti che ricevono l’immagine condividono dimensioni responsive e semantica decorativa; le immagini non determinano selezioni, punti o quantità. Asset e prompt sono documentati in [ILLUSTRATION-ASSETS.md](ILLUSTRATION-ASSETS.md).
+
+La build di questa estensione richiede 71.992 byte JavaScript per il percorso e 114.806 byte per tutte le schermate, non compressi; CSS 129.371 byte. Le sei nuove scene occupano 318.918 byte complessivi, si riutilizzano fra route e hanno caricamento lazy, decodifica async e dimensioni dichiarate. I PNG master restano negli artefatti locali e non sono caricati dal sito.
+
+Verifica: 17 route a quattro larghezze (320, 390, 1280 e 1440 px), 68 osservazioni senza overflow o immagini rotte; 12 conferme sulle tre intestazioni compattate, 28 catture native e sette verifiche dei flussi. Formattazione, 40 test e build passati. Metriche nel rapporto `.impeccable/review/illustrations/metrics.json`; revisione grafica e documentazione nella stessa cartella. Le prove usano l’origine QA separata dalle anteprime dell’utente.
