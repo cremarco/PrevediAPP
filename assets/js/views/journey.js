@@ -37,12 +37,12 @@ export function dashboard({ state }) {
  <ul class="list">${missions
    .map((m) => {
      const complete = missionDone(state, m.id);
-     return `<li class="list-row items-center px-0">${avatar(icon(m.icon), wellnessPalette[m.route].avatar)}<div class="min-w-0"><strong class="block font-semibold">${m.title}</strong><p class="mt-1 text-xs text-base-content/85">${m.description}</p><span class="badge badge-sm ${complete ? "badge-success" : "badge-soft badge-accent text-accent-content"} mt-2">${complete ? "Completato oggi" : `+${m.points} foglie`}</span></div><a href="#${m.route}" class="btn btn-ghost btn-circle text-primary" aria-label="${m.title}: ${complete ? "completato" : m.action}">${icon(complete ? "check" : "arrow-right")}</a></li>`;
+     return `<li class="list-row items-center px-0">${avatar(icon(m.icon), wellnessPalette[m.route].avatar)}<div class="min-w-0"><strong class="block font-semibold">${m.title}</strong><p class="mt-1 text-xs text-base-content/85">${m.description}</p><span class="badge badge-sm ${complete ? "badge-success" : "badge-soft badge-accent text-accent-content"} mt-2">${complete ? "Completato oggi" : `+${m.points} foglie`}</span></div><a href="#${m.route}" class="btn btn-ghost btn-circle size-11 text-primary" aria-label="${m.title}: ${complete ? "completato" : m.action}">${icon(complete ? "check" : "arrow-right")}</a></li>`;
    })
    .join("")}</ul>`;
   const treeBody = `<p class="text-sm text-base-content/85">Ogni buona abitudine mette una nuova radice.</p><figure>${alberello(state, "mx-auto h-52 w-52 xl:h-60 xl:w-60")}</figure><div class="flex flex-col items-center gap-3"><span class="badge badge-soft badge-primary text-base-content">${icon("arrow-trending-up", "size-4")}Livello ${level} · ${level === 1 ? "Un nuovo inizio" : "Radici più forti"}</span><div class="w-full"><div class="mb-2 flex justify-between gap-2 text-xs text-base-content/85"><span>Verso il livello ${level + 1}</span><span>${points % 100}/100 foglie</span></div><progress class="progress progress-primary w-full" value="${points % 100}" max="100" aria-label="Crescita di Alberello"></progress></div></div>`;
   return `${heading(state.name ? `Ciao ${esc(state.name)}, cresciamo insieme.` : "Ogni piccolo passo conta.", "Prenditi cura di te. Il tuo Alberello crescerà con te.", pointsPill(state))}
- ${!state.onboarded ? `<div class="alert alert-soft alert-info mb-6 sm:alert-horizontal" role="status">${icon("information-circle")}<span>Questo percorso è tuo. Iniziamo dal tuo nome?</span><a href="#profilo" class="btn btn-ghost btn-sm">Personalizza ${icon("arrow-right")}</a></div>` : ""}
+ ${!state.onboarded ? `<div class="alert alert-soft alert-info mb-6 grid-cols-[auto_1fr] grid-flow-row items-start gap-x-3 gap-y-1 sm:alert-horizontal sm:grid-flow-col" role="status">${icon("information-circle")}<span>Il tuo percorso, dal tuo nome.</span><a href="#profilo" class="btn btn-ghost btn-sm col-start-2 min-h-11 justify-self-start sm:col-start-auto">Personalizza ${icon("arrow-right")}</a></div>` : ""}
  <div class="grid items-stretch gap-6 @4xl:grid-cols-[1.65fr_1fr]">${card("", missionBody, "", "bg-base-100", 'aria-labelledby="daily-title"')}${card("Il tuo Alberello", treeBody, link("giardino", "Visita il tuo giardino"), "bg-primary/15 text-center")}</div>
  <div class="mt-8 mb-4 flex flex-wrap items-center justify-between gap-3"><h2>Coltiva il tuo equilibrio</h2>${link("diario", "Il mio diario")}</div>
  <div class="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 @4xl:grid-cols-4">${[
@@ -52,9 +52,14 @@ export function dashboard({ state }) {
      "Alimentazione",
      "Più varietà nel tuo piatto",
    ],
-   ["attivita", "bolt", "Movimento", "Trova il ritmo che fa per te"],
+   ["attivita", "bolt", "Attività fisica", "Trova il ritmo che fa per te"],
    ["sonno", "moon", "Sonno", "Fai spazio al tuo riposo"],
-   ["stress", "face-smile", "Benessere", "Ritrova un momento di calma"],
+   [
+     "stress",
+     "face-smile",
+     "Stress e benessere",
+     "Ritrova un momento di calma",
+   ],
  ]
    .map(
      ([id, sym, title, text]) =>
@@ -112,6 +117,41 @@ export function progress({ state, ui }) {
   const goal = config.goal ? state.goals[config.goal] : null;
   const max = Math.max(goal || 1, ...report.values),
     points = totalPoints(state);
+  const registered = report.dates.map((date) =>
+    state.entries.some(
+      (entry) => entry.type === report.type && entry.date === date,
+    ),
+  );
+  const shownDates = report.dates
+    .map((date, index) => ({ date, index }))
+    .filter(({ index }) => report.period === 7 || registered[index]);
+  const dailyRows = shownDates
+    .map(({ date, index }) => {
+      const label = dateLabel.format(new Date(date + "T12:00:00"));
+      return `<li class="list-row grid-cols-[3.5rem_1fr_auto] items-center px-0 py-3"><span class="text-xs ${date === localDate() ? "font-bold" : ""}">${label}</span>${registered[index] ? `<progress class="progress progress-primary w-full" value="${report.values[index]}" max="${max}" aria-label="${config.label} del ${date}: ${numberLabel.format(report.values[index])} ${config.unit}"></progress><span class="text-xs tabular-nums">${numberLabel.format(report.values[index])} ${config.unit}</span>` : '<span class="col-span-2 text-right text-xs text-base-content/85">Nessuna registrazione</span>'}</li>`;
+    })
+    .join("");
+  const gaps = [];
+  report.dates.forEach((date, index) => {
+    if (registered[index]) return;
+    const previous = gaps.at(-1);
+    if (previous && previous.lastIndex === index - 1) {
+      previous.end = date;
+      previous.lastIndex = index;
+      previous.count++;
+    } else gaps.push({ start: date, end: date, lastIndex: index, count: 1 });
+  });
+  const missingDays = report.period - report.registeredDays;
+  const missingDetail =
+    report.period === 30 && missingDays
+      ? `<details class="collapse collapse-arrow bg-base-200"><summary class="collapse-title min-h-11 py-3 text-sm font-semibold">${missingDays} ${missingDays === 1 ? "giorno senza registrazioni" : "giorni senza registrazioni"}</summary><div class="collapse-content"><p class="text-xs text-base-content/85">Qui non hai registrato questa abitudine: non è un valore pari a zero.</p><ul class="list">${gaps
+          .map((gap) => {
+            const start = dateLabel.format(new Date(gap.start + "T12:00:00"));
+            const end = dateLabel.format(new Date(gap.end + "T12:00:00"));
+            return `<li class="list-row grid-cols-[1fr_auto] gap-3 px-0 py-3 text-xs"><span>${start}${gap.count > 1 ? ` – ${end}` : ""}</span><span>${gap.count} ${gap.count === 1 ? "giorno" : "giorni"}</span></li>`;
+          })
+          .join("")}</ul></div></details>`
+      : "";
   const filters = `<div class="grid gap-3 sm:grid-cols-2"><fieldset class="fieldset"><legend class="fieldset-legend">Abitudine</legend><label class="sr-only" for="progress-category">Abitudine da esplorare</label><select id="progress-category" class="select border-secondary/75 w-full">${Object.entries(
     habitLabels,
   )
@@ -132,7 +172,7 @@ export function progress({ state, ui }) {
         : `${config.unit} nel periodo`,
     ],
     [report.registeredDays, "giorni registrati", `su ${report.period} giorni`],
-  ])}${!report.registeredDays ? `<p class="text-sm text-base-content/85">Le attività che aggiungi al diario compariranno qui. I giorni senza una registrazione non hanno un valore rilevato.</p>` : ""}<ul class="list">${report.dates.map((date, i) => `<li class="list-row grid-cols-[3.5rem_1fr_auto] items-center px-0 py-3"><span class="text-xs ${date === localDate() ? "font-bold" : ""}">${dateLabel.format(new Date(date + "T12:00:00"))}</span><progress class="progress progress-primary w-full" value="${report.values[i]}" max="${max}" aria-label="${config.label} del ${date}: ${numberLabel.format(report.values[i])} ${config.unit}"></progress><span class="text-xs tabular-nums">${report.values[i] ? `${numberLabel.format(report.values[i])} ${config.unit}` : "—"}</span></li>`).join("")}</ul><p class="text-xs text-base-content/85">${goal ? `Obiettivo personale: ${goal} ${config.unit} al giorno. ` : ""}${report.type === "sleep" ? "Se hai più registrazioni nello stesso giorno, viene usata l’ultima." : "Le quantità sommano le registrazioni di ogni giorno."}</p>`;
+  ])}${!report.registeredDays ? `<p class="text-sm text-base-content/85">Le attività che aggiungi al diario compariranno qui. I giorni senza una registrazione non hanno un valore rilevato.</p>` : ""}${dailyRows ? `<ul class="list">${dailyRows}</ul>` : ""}${missingDetail}<p class="text-xs text-base-content/85">${goal ? `Obiettivo personale: ${goal} ${config.unit} al giorno. ` : ""}${report.type === "sleep" ? "Se hai più registrazioni nello stesso giorno, viene usata l’ultima." : "Le quantità sommano le registrazioni di ogni giorno."}</p>`;
   const tree = `<figure>${alberello(state, "size-28 sm:size-36")}</figure>${stats(
     [
       [points, "foglie raccolte"],
@@ -142,18 +182,20 @@ export function progress({ state, ui }) {
   const learning = `<ul class="list">${Object.entries(quizSets)
     .map(([category, quiz]) => {
       const result = quizSummary(state, category);
-      return `<li class="list-row items-center px-0">${avatar(icon(result.completed ? "check" : "book-open"))}<div class="min-w-0"><strong class="block font-semibold">${quiz.title}</strong><p class="mt-1 text-xs text-base-content/85">${result.best !== null ? `Miglior risultato: ${result.best}/3 · ${result.attempts} ${result.attempts === 1 ? "tentativo" : "tentativi"}` : result.completed ? "Quiz già completato nel tuo percorso" : "Tre domande da esplorare"}</p></div><a class="btn btn-outline btn-sm min-h-11" href="#quiz/${category}">${result.completed ? "Riprova" : "Inizia"}<span class="sr-only"> · ${quiz.title}</span></a></li>`;
+      return `<li class="list-row items-center px-0">${avatar(icon(result.completed ? "check" : "book-open"))}<div class="min-w-0"><strong class="block font-semibold">${quiz.title}</strong><p class="mt-1 text-xs text-base-content/85">${result.best !== null ? `Migliore nello storico: ${result.best}/3 · ${result.attempts} ${result.attempts === 1 ? "tentativo conservato" : "tentativi conservati"}` : result.completed ? "Quiz già completato nel tuo percorso" : "Tre domande da esplorare"}</p></div><a class="btn btn-outline btn-sm min-h-11" href="#quiz/${category}">${result.completed ? "Riprova" : "Inizia"}<span class="sr-only"> · ${quiz.title}</span></a></li>`;
     })
-    .join("")}</ul>`;
+    .join(
+      "",
+    )}</ul><p class="text-xs text-base-content/85">Lo storico conserva gli ultimi 200 tentativi complessivi. I risultati si riferiscono ai tentativi ancora presenti; le foglie già raccolte restano nel percorso.</p>`;
   return `${heading("Guarda quanta strada hai fatto.", "I tuoi progressi, a partire dai gesti che hai registrato.")}<div class="grid items-start gap-6 @4xl:grid-cols-[1.5fr_1fr]">${card(`Il tuo ${report.type === "sleep" ? "riposo" : report.type === "water" ? "diario dell’acqua" : report.type === "mindful" ? "tempo per te" : "movimento"}`, chart, link("diario", "Apri il diario"))}${card("Il percorso di Alberello", tree, link("giardino", "Apri il tuo giardino"))}</div><div class="mt-6">${card("Le tue scoperte", learning)}</div><div class="mt-8 mb-4 flex flex-wrap items-center justify-between gap-3"><h2>Le tue abitudini, in tutto il percorso</h2>${link("diario", "Apri il diario")}</div><div class="grid grid-cols-2 gap-4 @4xl:grid-cols-4">${[
     ["meal", "chart-pie", "Pasti registrati"],
     ["movement", "bolt", "Attività registrate"],
-    ["sleep", "moon", "Notti raccontate"],
+    ["sleep", "moon", "Registrazioni di sonno"],
     ["mindful", "face-smile", "Pause per te"],
   ]
     .map(
       ([type, sym, label]) =>
-        `<div class="stats bg-base-100"><div class="stat min-w-0 p-5"><div class="stat-title flex items-center gap-2 whitespace-normal text-xs text-base-content/85">${icon(sym)}${label}</div><div class="stat-value mt-3 font-serif text-3xl font-medium">${state.entries.filter((entry) => entry.type === type).length}</div><div class="stat-desc text-base-content/85">nel tuo percorso</div></div></div>`,
+        `<div class="stats bg-base-100"><div class="stat min-w-0 p-5"><div class="stat-title flex items-center gap-2 whitespace-normal text-xs text-base-content/85">${icon(sym)}<span class="min-w-0 break-words">${label}</span></div><div class="stat-value mt-3 font-serif text-3xl font-medium">${state.entries.filter((entry) => entry.type === type).length}</div><div class="stat-desc whitespace-normal text-base-content/85">nel tuo percorso</div></div></div>`,
     )
     .join("")}</div>`;
 }

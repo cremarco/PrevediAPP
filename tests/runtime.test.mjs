@@ -62,16 +62,19 @@ test("Unavailable storage keeps in-memory edits and clears its warning after rec
   assert.equal(store.save(), true);
   assert.equal(store.problem, "");
 });
-test("Malformed external saves preserve the current state; valid saves and clears synchronize", () => {
+test("Malformed external saves stay protected until explicit recovery; healthy saves and clears synchronize", () => {
   const store = createStore(memoryStorage);
   store.state.name = "Da conservare";
   assert.equal(store.sync("{broken"), false);
   assert.equal(store.state.name, "Da conservare");
+  assert.equal(store.recoveryRaw, "{broken");
   assert.ok(store.problem);
-  assert.equal(
-    store.sync(JSON.stringify({ ...initialState(), name: "Altra scheda" })),
-    true,
-  );
+  const other = JSON.stringify({ ...initialState(), name: "Altra scheda" });
+  assert.equal(store.sync(other), false);
+  assert.equal(store.sync(null), false);
+  assert.equal(store.state.name, "Da conservare");
+  assert.equal(store.reset(), true);
+  assert.equal(store.sync(other), true);
   assert.equal(store.problem, "");
   assert.equal(store.state.name, "Altra scheda");
   assert.equal(store.sync(null), true);
@@ -314,7 +317,7 @@ test("Every registered screen loads and renders without accessing the DOM", asyn
   for (const route of Object.keys(routeNames)) {
     const screen = await load(route);
     const html = screen(context);
-    assert.match(html, /<h1>/, route);
+    assert.match(html, /<h1(?:\s[^>]*)?>/, route);
     assert.doesNotMatch(html, /\bundefined\b|\bNaN\b/, route);
   }
 });

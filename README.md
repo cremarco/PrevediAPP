@@ -23,13 +23,15 @@ Il codice è organizzato in moduli per schermate, stato, navigazione, timer e co
 ## Cosa funziona
 
 - Percorso giornaliero e diario di pasti, movimento, sonno, acqua e pause: modifica delle voci, note, navigazione per giorno e rimozione annullabile.
-- Quattro quiz con storico dei risultati; dispensa personale collegata alla composizione del piatto e alla registrazione del pasto.
+- Quattro quiz con storico dei risultati e ripresa indipendente per categoria durante la sessione; dispensa personale collegata alla composizione del piatto e alla registrazione del pasto.
 - Foglie, livelli, tre ricompense illustrate selezionabili e tappe basate sulle attività effettive; progressi per movimento, sonno, acqua e pause a 7 o 30 giorni.
 - Profilo e obiettivi, esportazione JSON/CSV, ripristino JSON con validazione e riepilogo, cancellazione confermata dei dati.
 - Test educativo del rischio CDC con punteggio e collegamenti alle fonti.
 - Conversazione guidata con Pigna, notifiche giornaliere e community dimostrativa con messaggi personali locali modificabili.
 
-I dati restano in `localStorage` su questo browser e dominio. Non c’è sincronizzazione fra dispositivi. La community contiene esempi e interazioni locali; Pigna usa risposte predefinite, senza un servizio AI. Le risposte del test CDC restano in memoria durante la sessione. Il timer funziona finché la pagina rimane aperta; ricaricare la pagina interrompe la pausa.
+I dati restano in `localStorage` su questo browser e dominio. Non c’è sincronizzazione fra dispositivi. Se un salvataggio è illeggibile, l’app protegge il file originale e sospende le modifiche: puoi conservarlo, ripristinare un JSON verificato o scegliere esplicitamente un nuovo percorso. Un errore di accesso ai dati permette invece modifiche temporanee in memoria, da esportare prima di chiudere.
+
+La community contiene esempi e interazioni locali; Pigna usa risposte predefinite su quattro temi, senza un servizio AI. La chat conserva gli ultimi 40 messaggi, comprese le risposte; lo storico quiz gli ultimi 200 tentativi complessivi. Conteggi e migliori risultati dei quiz si riferiscono allo storico conservato. I tentativi incompleti e le risposte del test CDC restano in memoria: ricaricare o chiudere la pagina li interrompe. Il timer funziona finché la pagina rimane aperta; ricaricarla interrompe la pausa.
 
 Funzioni completate e verifica dei flussi: [PROTOTYPE-COMPLETION.md](PROTOTYPE-COMPLETION.md). Le nuove scene del Giardino sono documentate in [GARDEN-ASSETS.md](GARDEN-ASSETS.md).
 
@@ -76,13 +78,15 @@ Modifica gli stili in `src/styles.css` e i moduli in `assets/js/`, poi ricompila
 | `assets/data.js` | Stato, punteggi, quiz e regole del test |
 | `assets/icons.js` | SVG Heroicons incorporati |
 | `src/styles.css` | Tema daisyUI Terra, font, tipografia e respirazione |
-| `tests/` | 48 test su dominio, storage, timer, chat, route, schermate, ripristino ed export |
+| `tests/` | 73 test su dominio, storage e recupero, sessioni quiz/test, timer, chat, route, schermate, ripristino ed export |
 | `PRODUCT.md` / `DESIGN.md` | Contesto del prodotto e sistema visivo |
 | `DAISYUI-AUDIT.md` | Componenti ufficiali adottati e controlli eseguiti |
 
 ## Verifica e fonti
 
-48 test automatici coprono le regole del prodotto, compatibilità e guasti dei salvataggi, timer, risposte tardive della chat, route, rendering delle schermate, modifica e annullamento delle registrazioni, report, ripristino ed esportazioni. Sono stati provati nel browser registrazioni, persistenza dopo ricarica, quiz, piatto e controlli del timer, oltre ai layout desktop e mobile e al caricamento sotto un sottopercorso.
+73 test automatici coprono le regole del prodotto, compatibilità e guasti dei salvataggi, protezione del file originale, recupero e sostituzione atomici, sessioni indipendenti dei quiz e rami del test educativo, timer, risposte tardive della chat, route, rendering, diario, report, ripristino ed esportazioni. Formattazione, controlli e build sono passati nell’ultima verifica.
+
+La revisione delle correzioni include 65 catture di 20 viste a 320, 390 e 1440 px, con cinque viste anche a 2723 px, e 14 catture dei flussi. Le misure delle 60 osservazioni route/larghezza non rilevano overflow del documento o immagini rotte. La revisione indipendente e le nove catture successive chiudono i tre problemi finali di errore nel dialogo, messaggi Community e azioni di Pigna. Comportamenti e ambito sono descritti in [MAINTENANCE.md](MAINTENANCE.md#correzioni-dellinterfaccia-e-recupero-dati); i rapporti locali `.impeccable/review/fixes/finish-review.md` e `finish-verdict.md` sono esclusi dal repository pubblicato. È una verifica euristica delle superfici e dei flussi esaminati; il punteggio della critica precedente non è stato ricalcolato.
 
 Il test è una traduzione educativa dello [strumento CDC e del suo punteggio](https://www.cdc.gov/diabetes/widgets/risktest/how-your-test-is-scored.html); non è una diagnosi o uno strumento clinico validato per questa app. Nell’app, “Informazioni e fonti” raccoglie i riferimenti educativi.
 

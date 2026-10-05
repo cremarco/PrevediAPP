@@ -23,7 +23,11 @@ import { entryDialog, backupDialog, dialogHeading } from "./ui/dialogs.js";
 import { createStore } from "./store.js";
 import {
   initialSession,
-  initialQuiz,
+  openQuiz,
+  resumeQuiz,
+  restartQuiz,
+  advanceRisk,
+  backRisk,
   initialRisk,
   riskQuestions,
 } from "./session.js";
@@ -61,9 +65,12 @@ const elements = {
   notificationDot: $("#notification-dot"),
   storageNotice: $("#storage-notice"),
   storageMessage: $("#storage-message"),
+  storageActions: $("#storage-actions"),
+  storageRecover: $("#storage-recover"),
   toast: $("#toast"),
   toastMessage: $("#toast-message"),
   toastUndo: $("#toast-undo"),
+  toastDay: $("#toast-day"),
 };
 const store = createStore(() => localStorage);
 const ui = initialSession();
@@ -87,14 +94,18 @@ let backupVersion = 0;
 function storageBanner() {
   elements.storageNotice.hidden = !store.problem;
   elements.storageMessage.textContent = store.problem;
+  elements.storageActions.hidden = !store.recoveryRequired;
+  elements.storageRecover.hidden = store.recoveryReason !== "existing";
 }
 function persist() {
-  store.save();
+  const saved = store.save();
   storageBanner();
+  return saved;
 }
 function toast(message, undo = null) {
   clearTimeout(toastTimeout);
   undoAction = undo;
+  elements.toastDay.hidden = true;
   elements.toastUndo.hidden = !undo;
   elements.toastMessage.textContent = message;
   elements.toast.hidden = false;
@@ -107,24 +118,52 @@ function toast(message, undo = null) {
   );
 }
 function navLink([id, symbol, label], mobile = false) {
+  const parent =
+    view === "quiz"
+      ? ui.quiz.category
+      : ["piatto", "frigo"].includes(view)
+        ? "alimentazione"
+        : ["rischio", "notifiche", "informazioni"].includes(view)
+          ? "percorso"
+          : view;
   const active =
     view === id ||
+    parent === id ||
     (mobile &&
       id === "percorso" &&
-      !["giardino", "assistente", "community", "profilo"].includes(view));
+      !["giardino", "assistente", "community", "profilo"].includes(parent));
+  const current = active
+    ? `aria-current="${view === id ? "page" : "location"}"`
+    : "";
   return mobile
-    ? `<button class="${active ? "dock-active text-primary" : ""}" data-action="navigate" data-route="${id}" ${active ? 'aria-current="page"' : ""}>${icon(symbol)}<span class="dock-label">${label}</span></button>`
-    : `<li><a href="#${id}" class="min-h-11 ${active ? "menu-active bg-primary text-primary-content" : ""}" ${active ? 'aria-current="page"' : ""}>${icon(symbol)}${label}</a></li>`;
+    ? `<button class="${active ? "dock-active text-primary" : ""}" data-action="navigate" data-route="${id}" ${current}>${icon(symbol)}<span class="dock-label">${label}</span></button>`
+    : `<li><a href="#${id}" class="min-h-11 ${active ? "menu-active bg-primary text-primary-content" : ""}" ${current}>${icon(symbol)}${label}</a></li>`;
 }
 function chrome() {
-  if (chromeRoute !== view) {
+  const routeKey = view === "quiz" ? `quiz/${ui.quiz.category}` : view;
+  if (chromeRoute !== routeKey) {
     elements.desktopNav.innerHTML = `<ul class="menu w-full gap-1 px-0">${mainNav.map((x) => navLink(x)).join("")}<li class="menu-title mt-3 text-base-content/85">Il tuo benessere</li>${wellnessNav.map((x) => navLink(x)).join("")}<li class="menu-title mt-3 text-base-content/85">Insieme</li>${communityNav.map((x) => navLink(x)).join("")}</ul>`;
     elements.mobileNav.innerHTML = dockNav
       .map((x) => navLink(x, true))
       .join("");
     elements.breadcrumb.textContent = routeNames[view];
     document.title = `${routeNames[view]} · PREVEDIApp`;
-    chromeRoute = view;
+    document.querySelectorAll('a[href="#profilo"]').forEach((element) => {
+      if (
+        element.closest("header") ||
+        element.hasAttribute("data-profile-nav")
+      ) {
+        if (view === "profilo") element.setAttribute("aria-current", "page");
+        else element.removeAttribute("aria-current");
+      }
+    });
+    const notificationsLink = document.querySelector(
+      'header a[href="#notifiche"]',
+    );
+    if (view === "notifiche")
+      notificationsLink.setAttribute("aria-current", "page");
+    else notificationsLink.removeAttribute("aria-current");
+    chromeRoute = routeKey;
   }
   if (chromeName !== store.state.name) {
     const initial = (store.state.name || "P").slice(0, 1).toUpperCase();
@@ -167,6 +206,34 @@ function restoreFocus(info) {
     target = document.querySelector(selector);
   }
   if (target && !target.disabled) target.focus({ preventScroll: true });
+  else if (
+    elements.main.contains(document.activeElement) ||
+    document.activeElement === document.body
+  )
+    elements.main.focus({ preventScroll: true });
+}
+function focusStep(selector) {
+  const target = $(selector);
+  if (!target) return;
+  target.focus({ preventScroll: true });
+  target.scrollIntoView({ block: "center", behavior: "instant" });
+}
+function allowWrite() {
+  store.prepareWrite();
+  storageBanner();
+  if (!store.recoveryRequired) return true;
+  if (elements.dialog.open) {
+    showDialogError(
+      "Le modifiche sono sospese perché il salvataggio è protetto. La bozza resta in questa finestra. Puoi annullare per conservare il file originale e scegliere come recuperare il percorso.",
+    );
+    focusStep("#dialog-error");
+  } else {
+    toast(
+      "Le modifiche sono sospese. Conserva il file originale e scegli come recuperare il percorso.",
+    );
+    focusStep("#storage-message");
+  }
+  return false;
 }
 function fitChatLog(log) {
   let pinned = true,
@@ -202,6 +269,7 @@ function render(focus = false) {
     ui,
     timer: timer.snapshot(),
     chatBusy: conversation.busy,
+    recoveryRequired: store.recoveryRequired,
     breathing: breathingMotion.settings(),
   });
   breathingMotion.mount();
@@ -227,7 +295,7 @@ async function navigate() {
     if (request !== navigationVersion) return;
     view = route.view;
     renderer = nextRenderer;
-    if (view === "quiz") ui.quiz = initialQuiz(route.category);
+    if (view === "quiz") openQuiz(ui, route.category);
     render(true);
   } catch {
     if (request !== navigationVersion) return;
@@ -314,6 +382,18 @@ async function previewBackup(file, input) {
     input.value = "";
   }
 }
+function showDialogError(message) {
+  let error = $("#dialog-error");
+  if (!error) {
+    error = document.createElement("p");
+    error.id = "dialog-error";
+    error.className = "alert alert-error alert-soft my-4";
+    error.setAttribute("role", "alert");
+    error.tabIndex = -1;
+    elements.dialogContent.append(error);
+  }
+  error.textContent = message;
+}
 function exportFile(filename, content, type) {
   download(filename, content, type);
   toast("Esportazione pronta. Controlla la cartella Download.");
@@ -340,6 +420,7 @@ const timer = createTimer({
     breathingMotion.update(snapshot);
   },
   onComplete(snapshot) {
+    if (!allowWrite()) return;
     addEntry(store.state, {
       type: "mindful",
       label: "Pausa di respirazione",
@@ -392,6 +473,14 @@ const actions = {
       "Registrazione rimossa dal diario.",
     ),
   "undo-delete": () => undoAction?.(),
+  "open-saved-day": (el) => {
+    if (!validDate(el.dataset.date)) return;
+    ui.diary.date = el.dataset.date;
+    ui.diary.filter = "all";
+    if (view === "diario") render(true);
+    else location.hash = "diario";
+    elements.toast.hidden = true;
+  },
   "diary-day": (el) => {
     const offset = Number(el.dataset.offset);
     if (![-1, 1].includes(offset)) return;
@@ -399,6 +488,11 @@ const actions = {
     if (date > localDate()) return;
     ui.diary.date = date;
     render();
+  },
+  "diary-clear-filter": () => {
+    ui.diary.filter = "all";
+    render();
+    focusStep("#diary-filter");
   },
   "diary-today": () => {
     ui.diary.date = localDate();
@@ -424,6 +518,8 @@ const actions = {
       );
       persist();
       render();
+      if (list.length === 1) $("[data-action=water-plus]")?.focus();
+      toast("Un bicchiere rimosso dal diario.");
     }
   },
   "plate-add": (el) => {
@@ -431,6 +527,7 @@ const actions = {
       ui.plate.items.push(el.dataset.id);
       ui.plate.message = "";
       render();
+      if (ui.plate.items.length === 4) focusStep("[data-action=plate-check]");
     }
   },
   "plate-remove": (el) => {
@@ -599,28 +696,49 @@ const actions = {
       if (added) toast("Quiz completato. Hai raccolto 20 foglie!");
     }
     render();
+    focusStep(ui.quiz.finished ? "#quiz-result" : "#quiz-question");
+  },
+  "quiz-resume": () => {
+    resumeQuiz(ui);
+    render();
+    focusStep("#quiz-question");
   },
   "quiz-restart": () => {
-    ui.quiz = initialQuiz(ui.quiz.category);
+    restartQuiz(ui);
     render();
+    focusStep("#quiz-question");
   },
   "risk-back": () => {
-    if (ui.risk.step > 0) {
-      ui.risk.step--;
-      if (ui.risk.step === 2 && ui.risk.answers.sex === "male") ui.risk.step--;
-    }
+    backRisk(ui.risk);
     render();
+    focusStep("#risk-question");
   },
   "risk-restart": () => {
     ui.risk = initialRisk();
     render();
+    focusStep("#risk-question");
   },
   "export-json": () =>
     exportFile(
-      `prevedi-percorso-${localDate()}.json`,
-      JSON.stringify(store.state, null, 2),
+      `prevedi-${store.recoveryRequired ? "originale-da-recuperare" : "percorso"}-${localDate()}.json`,
+      store.recoveryRaw ?? JSON.stringify(store.state, null, 2),
       "application/json",
     ),
+  "recover-storage": () => {
+    if (!store.recover()) {
+      storageBanner();
+      toast(
+        "Il browser non permette il recupero. Conserva la copia originale prima di chiudere.",
+      );
+      return;
+    }
+    conversation.cancelPending();
+    timer.reset(60);
+    Object.assign(ui, initialSession());
+    if (view === "quiz") openQuiz(ui, resolveRoute(location.hash).category);
+    render(true);
+    toast("Percorso ritrovato e recuperato in questo browser.");
+  },
   "export-csv": exportCSV,
   "clear-chat": () => {
     elements.dialogContent.innerHTML = `${dialogHeading("Cancellare la conversazione?")}<p>I messaggi con Pigna verranno rimossi da questo browser. Il diario e i progressi restano disponibili.</p><div class="modal-action"><button class="btn btn-ghost" data-action="close-dialog">Annulla</button><button class="btn btn-error" data-action="clear-chat-confirmed">Cancella la conversazione</button></div>`;
@@ -633,18 +751,20 @@ const actions = {
   },
   "restore-backup": () => {
     if (!pendingBackup) return;
+    if (!store.replace(pendingBackup)) {
+      storageBanner();
+      showDialogError(
+        "Ripristino non riuscito: il browser non permette il salvataggio. I dati precedenti sono ancora protetti. Puoi annullare e conservare una copia.",
+      );
+      return;
+    }
     conversation.cancelPending();
     timer.reset(60);
-    store.replace(pendingBackup);
     Object.assign(ui, initialSession());
     elements.dialog.close();
     storageBanner();
     render(true);
-    toast(
-      store.problem
-        ? "Copia ripristinata in memoria. Esportala: il browser non riesce a salvarla."
-        : "Copia ripristinata. Ritrovi il tuo percorso su questo browser.",
-    );
+    toast("Copia ripristinata. Ritrovi il tuo percorso in questo browser.");
   },
   "confirm-reset": () => {
     $("#dialog-content").innerHTML =
@@ -652,11 +772,16 @@ const actions = {
     $("#entry-dialog").showModal();
   },
   "reset-confirmed": () => {
+    if (!store.reset()) {
+      storageBanner();
+      showDialogError(
+        "Non riesco a cancellare i dati salvati. I dati precedenti restano disponibili. Puoi annullare, conservare una copia e riprovare quando il browser permette il salvataggio.",
+      );
+      return;
+    }
     conversation.cancelPending();
     timer.reset(60);
-    store.reset();
     Object.assign(ui, initialSession());
-    persist();
     elements.dialog.close();
     location.hash = "profilo";
     render();
@@ -670,6 +795,29 @@ const actions = {
     toast("Promemoria segnati come letti.");
   },
 };
+
+const writeActions = new Set([
+  "open-entry",
+  "edit-entry",
+  "delete-entry",
+  "undo-delete",
+  "water-plus",
+  "water-minus",
+  "plate-save",
+  "fridge-toggle",
+  "claim",
+  "decorate",
+  "timer-toggle",
+  "join-group",
+  "water-tree",
+  "like-post",
+  "edit-post",
+  "delete-post",
+  "chat-suggestion",
+  "clear-chat",
+  "clear-chat-confirmed",
+  "read-notifications",
+]);
 
 document.addEventListener("keydown", (event) => {
   if (
@@ -695,8 +843,13 @@ document.addEventListener("click", (event) => {
     control &&
     !control.disabled &&
     Object.hasOwn(actions, control.dataset.action)
-  )
+  ) {
+    const writes =
+      writeActions.has(control.dataset.action) ||
+      (control.dataset.action === "quiz-next" && ui.quiz.index === 2);
+    if (writes && !allowWrite()) return;
     actions[control.dataset.action](control);
+  }
 });
 document.addEventListener("change", (event) => {
   if (event.target.id === "breathing-motion")
@@ -730,6 +883,15 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("submit", (e) => {
+  if (
+    ["entry-form", "community-form", "profile-form", "chat-form"].includes(
+      e.target.id,
+    ) &&
+    !allowWrite()
+  ) {
+    e.preventDefault();
+    return;
+  }
   if (e.target.id === "entry-form") {
     e.preventDefault();
     const form = e.target,
@@ -743,9 +905,19 @@ document.addEventListener("submit", (e) => {
       if (form.dataset.id) updateEntry(store.state, form.dataset.id, entry);
       else addEntry(store.state, entry, entry.date);
       persist();
+      if (view === "diario") {
+        ui.diary.date = entry.date;
+        ui.diary.filter = "all";
+      }
       elements.dialog.close();
       render();
       const added = totalPoints(store.state) - before;
+      const dateLabel = new Intl.DateTimeFormat("it-IT", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: "Europe/Rome",
+      }).format(new Date(`${entry.date}T12:00:00Z`));
       toast(
         form.dataset.id
           ? "Registrazione aggiornata. Le foglie restano invariate."
@@ -753,6 +925,11 @@ document.addEventListener("submit", (e) => {
             ? `Salvato nel diario. +${added} foglie per il tuo Alberello!`
             : "Salvato nel tuo diario.",
       );
+      if (entry.date !== localDate()) {
+        elements.toastMessage.textContent += ` Giorno: ${dateLabel}.`;
+        elements.toastDay.dataset.date = entry.date;
+        elements.toastDay.hidden = false;
+      }
     } catch (error) {
       $("#entry-error").textContent = error.message;
     }
@@ -830,14 +1007,15 @@ document.addEventListener("submit", (e) => {
         return;
       }
     } else {
-      ui.risk.answers[q.key] = data.get("answer");
-      ui.risk.step++;
-      if (ui.risk.step === 2 && ui.risk.answers.sex === "male") {
-        ui.risk.answers.gestational = "no";
-        ui.risk.step++;
+      try {
+        advanceRisk(ui.risk, data.get("answer"));
+      } catch (error) {
+        $("#risk-error").textContent = error.message;
+        return;
       }
     }
-    render(true);
+    render();
+    focusStep(ui.risk.result ? "#risk-result" : "#risk-question");
   }
 });
 
@@ -862,7 +1040,12 @@ window.addEventListener("storage", (event) => {
     elements.dialog.close();
     render();
     toast("Percorso aggiornato dall’altra scheda.");
-  } else storageBanner();
+  } else {
+    conversation.cancelPending();
+    if (timer.snapshot().running) timer.toggle();
+    render();
+    storageBanner();
+  }
 });
 let currentDay = localDate();
 document.addEventListener("visibilitychange", () => {

@@ -1,6 +1,6 @@
 # Manutenzione di PREVEDIApp
 
-Refactoring ed estensione del prototipo del 5 ottobre 2026. JavaScript nativo a moduli; HTML, Tailwind 4 e componenti daisyUI 5 con tema Terra e Heroicons.
+Refactoring ed estensione del prototipo del 5 ottobre 2026, con correzioni dell’interfaccia e del recupero dati del 6 ottobre. JavaScript nativo a moduli; HTML, Tailwind 4 e componenti daisyUI 5 con tema Terra e Heroicons.
 
 ## Dove intervenire
 
@@ -17,8 +17,8 @@ Refactoring ed estensione del prototipo del 5 ottobre 2026. JavaScript nativo a 
 | `assets/js/records.js` | Validazione di date/voci, modifica atomica, rimozione/annullamento e messaggi locali |
 | `assets/js/insights.js` | Report 7/30 giorni, riepilogo quiz, tappe e piatto dalla dispensa |
 | `assets/js/backup.js` | Validazione della copia JSON, limite 2 MB e importazione dei soli campi noti |
-| `assets/js/store.js` | Lettura, salvataggio, errori e sincronizzazione dei dati |
-| `assets/js/session.js` | Stato transitorio di filtri, piatto, quiz e test |
+| `assets/js/store.js` | Lettura, protezione del file originale, preflight, salvataggio e recupero atomico |
+| `assets/js/session.js` | Stato transitorio di filtri, piatto, quiz per categoria e rami del test |
 | `assets/js/timer.js` | Orologio preciso della respirazione e ciclo dei callback |
 | `assets/js/breathing.js` | Fasi, Web Animation, pausa, visibilità e preferenze di movimento |
 | `assets/js/conversation.js` | Invio, risposta differita e cancellazione delle operazioni Pigna |
@@ -33,10 +33,14 @@ Le schermate ricevono uno snapshot esplicito `{ state, ui, timer, chatBusy }` e 
 
 - `store.state` contiene il percorso persistente; la chiave resta `prevediapp.v1` e lo schema resta versione 1.
 - I salvataggi validi esistenti vengono mantenuti. `posts`, `quizHistory` e le letture delle notifiche sono campi opzionali; i vecchi quiz risultano completati senza inventare un punteggio storico. Chat e selezioni opzionali danneggiate vengono normalizzate, impedendo il blocco delle schermate.
-- Un errore di storage lascia le modifiche in memoria e rende disponibile l’avviso esistente. Una sincronizzazione non leggibile preserva lo stato corrente.
+- Un errore di accesso o scrittura lascia le modifiche ordinarie in memoria e mostra l’avviso di esportarle prima di chiudere. Un salvataggio illeggibile attiva invece la protezione: `recoveryRaw` conserva la stringa originale, la sincronizzazione non la sostituisce e le azioni persistenti sono sospese fino a una scelta esplicita.
+- `prepareWrite()` esegue il preflight prima della mutazione: restituisce `false` per un file protetto e consente modifiche temporanee se lo storage è inaccessibile. Se la lettura iniziale era negata, un percorso valido scoperto dopo viene protetto come `existing`; `recover()` permette di adottarlo esplicitamente. `save()`, `reset()`, `replace()`, `recover()` e `sync()` restituiscono un esito booleano, che il controller deve rispettare.
+- `reset()`, `replace()` e `recover()` scrivono il prossimo stato prima di sostituire quello in memoria. Un fallimento conserva stato e copia protetta; il controller annulla operazioni pendenti e sessioni solo dopo il successo. L’export JSON durante la protezione usa il raw originale e il nome `originale-da-recuperare`, senza presentarlo come backup già validato.
 - Le modifiche del diario mantengono identità e punti già assegnati. L’annullamento di una rimozione dura 12 secondi e ripristina la posizione originale; viene invalidato se cambia lo stato da ripristino o sincronizzazione.
 - Il ripristino valida e clona il JSON prima di sostituire lo stato, con riepilogo e conferma. Un’importazione non valida non tocca il percorso attuale.
-- `ui` contiene solo dati transitori. Le risposte del test educativo non entrano in localStorage.
+- `ui` contiene solo dati transitori. `ui.quizzes` mantiene i tentativi indipendenti per categoria; `ui.quiz` è il riferimento a quello corrente. `openQuiz()` propone la ripresa, `resumeQuiz()` conserva avanzamento e risposte verificate, `restartQuiz()` sostituisce soltanto la categoria corrente. Il tentativo completato resta sul suo esito; ricaricare o chiudere la pagina cancella i tentativi incompleti.
+- Le risposte del test educativo non entrano in localStorage. La domanda gestazionale presentata non ha una risposta iniziale; `gestationalSkipped` distingue il `no` assegnato dal ramo saltato da una risposta personale e lo svuota quando il ramo cambia. Il contatore segue le domande applicabili.
+- Chat e storico quiz conservano rispettivamente gli ultimi 40 messaggi, comprese le risposte, e 200 tentativi complessivi. Conteggi e migliori risultati descrivono lo storico conservato; le foglie già assegnate mantengono riconoscibili le categorie completate.
 - Cancellare la chat, azzerare il percorso o ricevere un salvataggio da un’altra scheda annulla la risposta pendente. Il token della richiesta impedisce a un callback già avviato di ripristinare messaggi cancellati.
 - Il timer non programma lavoro quando è fermo. In esecuzione aggiorna i secondi usando l’orologio reale, gestendo pause, ritardi e reset senza accumulare intervalli.
 
@@ -53,7 +57,7 @@ npm run build
 
 `npm run format` formatta JavaScript, script e test con Prettier. Le versioni di esbuild e Prettier sono fissate in `package.json`; `package-lock.json` rende riproducibili le dipendenze. GitHub Actions verifica formato, sintassi, test e build prima della pubblicazione.
 
-Il comando `check` verifica ricorsivamente la sintassi dei moduli. I 48 test coprono le regole del prodotto, compatibilità e guasti dello storage, callback del timer, risposte tardive della chat, route non valide, ripetizione di un caricamento fallito, rendering di tutte le schermate, validazione e modifiche del diario, annullamento, report e tappe, compatibilità del ripristino ed esportazione CSV.
+Il comando `check` verifica ricorsivamente la sintassi dei moduli. I 73 test coprono le regole del prodotto, compatibilità e guasti dello storage, protezione del raw, preflight e sostituzione atomica, sessioni quiz per categoria e rami del test, callback del timer, risposte tardive della chat, route non valide, ripetizione di un caricamento fallito, rendering di tutte le schermate, diario, annullamento, report, tappe, ripristino ed esportazione CSV.
 
 Per aggiungere una schermata:
 
@@ -108,3 +112,13 @@ Verifica: 17 route a quattro larghezze (320, 390, 1280 e 1440 px), 68 osservazio
 ## Animazione della respirazione
 
 Il timer mantiene i millisecondi per pausa e ripresa; gli otto test aggiunti verificano frazioni, confini di fase, scadenza e callback obsoleti. La Web Animation conserva una sola istanza per il componente montato e si interrompe in pausa, fuori vista o a scheda nascosta. Il movimento ridotto e il toggle mantengono una guida statica con fase, tempo e progresso. Le due metà del ciclo usano ease-in-out, su timeline lineare. La verifica della UI include il viewport utente 2723 × 1210 e telefoni da 390/320 px. [Documentazione e fonti](BREATHING-MOTION.md).
+
+## Correzioni dell’interfaccia e recupero dati
+
+I vuoti del diario distinguono il giorno senza attività dal filtro senza risultati e permettono di togliere il filtro. Le categorie parlano delle registrazioni di oggi. Il feedback di una registrazione con data diversa indica il giorno e offre «Apri quel giorno»; le sottoviste mantengono attiva l’area di appartenenza.
+
+Le transizioni di quiz e test portano il focus alla nuova domanda o all’esito; la risposta quiz verificata porta a «Prossima domanda» o «Concludi». Dopo la quarta porzione del piatto, il focus raggiunge Verifica. Il fallback del rendering evita di lasciare il focus sul documento quando il controllo precedente scompare. Se il salvataggio viene protetto mentre un dialogo è aperto, Salva mostra e focalizza un `alert` interno al dialogo: la bozza e Annulla restano disponibili.
+
+Progressi a 30 giorni raggruppa i giorni senza registrazioni in `details`/`summary` con il componente nativo `collapse`; un giorno non registrato non diventa uno zero misurato. Lo stesso componente espone i quattro temi vicino al campo di Pigna. Le azioni del fallback restano in una colonna nella bolla; nei post personali Community le azioni occupano una riga successiva su telefono e la colonna dedicata su desktop. Timer e avvio precedono la guida nella pagina Stress; nel Piatto la selezione precede il modello. Sono adattamenti delle viste con componenti esistenti, senza nuovi token o raster.
+
+L’ultima esecuzione fornita dal builder ha superato formato, 73 test e build. La revisione indipendente ha esaminato 65 catture finali, 14 catture dei flussi e nove catture dei tre fix successivi. `.impeccable/review/fixes/final/metrics.json` riporta 60 osservazioni di 20 viste a 320, 390 e 1440 px senza overflow del documento o immagini rotte; cinque viste sono state catturate anche a 2723 px. Il verdetto locale `.impeccable/review/fixes/finish-verdict.md` chiude i tre finding della revisione in `finish-review.md`; rapporti e catture QA sono esclusi dal repository pubblicato. Queste evidenze verificano i casi esaminati e non ricalcolano il punteggio della critica generale. Le misure e i conteggi delle sezioni precedenti descrivono le rispettive build storiche.
