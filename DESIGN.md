@@ -263,7 +263,7 @@ La palette ha la materia discreta di un quaderno chiaro e di un giardino: colori
 
 ### Secondary
 
-- **Terra** (`secondary`): Benessere e respirazione al (15%), bolle Pigna al (10%) e consigli discreti al (5%). Il bordo dei campi usa Terra al (75%) per distinguere il controllo dal bianco.
+- **Terra** (`secondary`): introduzioni e voci Benessere al (15%), bolle Pigna al (10%) e consigli discreti al (5%). Il bordo dei campi usa Terra al (75%) per distinguere il controllo dal bianco. La guida alla respirazione usa un avatar Pigna su `primary/15` e un progresso circolare su `primary/5`, mantenendo i token Terra.
 
 ### Tertiary
 
@@ -284,7 +284,7 @@ La palette ha la materia discreta di un quaderno chiaro e di un giardino: colori
 | Alimentazione / acqua | `primary/15` | `primary` |
 | Movimento | `accent/25` | `secondary` |
 | Sonno | `info/15` | `info` |
-| Benessere / respirazione | `secondary/15` | `secondary` |
+| Benessere (introduzioni e voci) | `secondary/15` | `secondary` |
 
 La mappa condivisa `wellnessPalette` mantiene questi ruoli fra tessere, missioni, introduzioni e diario. Contrasti calcolati, stati e simulazioni in `COLOR-AUDIT.md`. La modalità supportata resta chiara.
 
@@ -340,9 +340,9 @@ La profondità viene principalmente da fondo, bordo e spazio. Le card ordinarie 
 
 Gli stati dei componenti conservano i tempi daisyUI: pulsanti (200ms) con curva `cubic-bezier(0, 0, .2, 1)` e pressione verticale (0.5px); barre native (300ms) quando il browser supporta il relativo pseudo-elemento e la preferenza consente movimento. Drawer, dialoghi, card e dock mantengono le proprie transizioni della libreria.
 
-La respirazione applica un unico hook al componente avatar: ciclo (8s, ease-in-out), scala da (0.86) a (1), pausa tramite `animation-play-state: paused`. Il testo della fase continua a indicare Inspira/Espira con il timer. Non cambia il colore del componente durante il ciclo.
+La respirazione anima l’avatar nativo con Pigna mediante una Web Animation: ciclo (8s), scala da (0.8) a (1) e opacità da (0.85) a (1). Ogni metà usa ease-in-out, con tempo complessivo lineare, così l’inversione a quattro secondi rimane morbida e coincide con Inspira/Espira. La fase e il tempo restano testo fermo; il radial-progress nativo mostra la sessione completa. Il timer conserva i millisecondi e riposiziona l’animazione in pausa, ripresa e rimontaggio della pagina; non cambia il colore durante il ciclo.
 
-La regola globale `prefers-reduced-motion: reduce` riduce animazioni e transizioni a (0.001ms), limita le iterazioni a una e usa scorrimento automatico. L'avatar della respirazione perde l'animazione e ogni trasformazione.
+La regola globale `prefers-reduced-motion: reduce` riduce animazioni e transizioni a (0.001ms), limita le iterazioni a una e usa scorrimento automatico. La guida osserva la stessa preferenza per cancellare la Web Animation e conservare una posa statica, fase e countdown. Il toggle nativo Animazione consente di fermare il movimento; a scheda nascosta e fuori vista l’animazione è sospesa, mentre il timer mantiene il proprio tempo.
 
 ## Shapes
 
@@ -350,13 +350,13 @@ Card, alert e dialoghi condividono il raggio morbido `box`; campi, pulsanti, voc
 
 Il bordo di tema misura (1px). Le dimensioni native dei campi e dei selettori derivano dal passo (0.25rem); usare le varianti daisyUI per la scala del componente e utility Tailwind per i suoi vincoli di layout.
 
-Alberello conserva il PNG del prototipo, incluso il paesaggio circolare. Pigna conserva il PNG trasparente generato con il prompt in `assets/images/pigna.prompt.txt`, linee organiche scure e colori opachi terra/salvia. Entrambi usano `object-fit: contain`, senza ritagli o deformazioni. Le icone provengono da Heroicons v2.1.5 outline su viewBox (24 × 24), tratto (1.5), cap e join arrotondati: dimensione normale (20px), metadati (16px), respirazione (32px).
+Alberello conserva il PNG del prototipo, incluso il paesaggio circolare. Pigna conserva il PNG trasparente generato con il prompt in `assets/images/pigna.prompt.txt`, linee organiche scure e colori opachi terra/salvia. Entrambi usano `object-fit: contain`, senza ritagli o deformazioni. Le icone provengono da Heroicons v2.1.5 outline su viewBox (24 × 24), tratto (1.5), cap e join arrotondati: dimensione normale (20px), metadati (16px), enfasi (32px). Nella guida alla respirazione, Pigna occupa l’avatar centrale e gli Heroicons nominano i controlli.
 
 I nomi delle icone nel codice sono quelli ufficiali Heroicons. `star` accompagna le foglie, `arrow-trending-up` i livelli, `face-smile` il benessere, `paper-airplane` l’invio e `clipboard-document-check` il questionario. Per i cibi senza icona dedicata, il nome identifica l’alimento e `plus` / `check` comunica l’azione o la selezione. Non usare simboli estranei come sostituti figurativi. Gli SVG sono decorativi, esclusi dalla sequenza di focus; le etichette accessibili appartengono ai controlli. La verifica completa è in `HEROICONS-AUDIT.md`.
 
 ## Components
 
-**Contratto approvato:** ogni controllo e contenitore UI usa il componente daisyUI reale, incluse le sue parti ufficiali. Tailwind gestisce layout, spazi, dimensioni, tipografia e opacità dei colori semantici. `src/styles.css` contiene tema completo, font, tipografia di base, focus/selezione/caret e respirazione con riduzione del movimento; non contiene classi che ridisegnano i componenti. La mappatura completa è in `DAISYUI-AUDIT.md`.
+**Contratto approvato:** ogni controllo e contenitore UI usa il componente daisyUI reale, incluse le sue parti ufficiali. Tailwind gestisce layout, spazi, dimensioni, tipografia e opacità dei colori semantici. `src/styles.css` contiene tema completo, font, tipografia di base, focus/selezione/caret e riduzione del movimento; non contiene classi che ridisegnano i componenti. `assets/js/breathing.js` gestisce la guida animata e la sincronizza al timer. La mappatura completa è in `DAISYUI-AUDIT.md`.
 
 ### Buttons
 
@@ -406,7 +406,7 @@ La card della conversazione separa intestazione, registro e form di scrittura. I
 
 All’invio e alla ricarica, il registro mostra l’ultimo messaggio. Quando cambia dimensione, segue il fondo se era già in fondo; chi sta leggendo la cronologia conserva la sua posizione. Nei viewport molto bassi resta disponibile lo scorrimento della pagina: la card conserva un’altezza minima utilizzabile.
 
-La respirazione usa `avatar avatar-placeholder` con un `div` diretto circolare, testo della fase e timer. L'unico CSS di movimento personalizzato è l'hook `data-breathing`; forma e superficie rimangono quelle del componente nativo.
+La respirazione usa `radial-progress` (208px, 224px da 640px; spessore 3px) e `avatar` con Pigna, fondo `primary/15` e figura contenuta. Il valore percentuale numerico e gli attributi del progressbar descrivono l’avanzamento della sessione; fase, countdown e comandi sono esterni all’avatar animato. Il toggle nativo consente la guida statica. `assets/js/breathing.js` gestisce una sola Web Animation e la sincronizza al timer; forma e superficie rimangono quelle dei componenti nativi.
 
 ### Dialoghi e feedback
 

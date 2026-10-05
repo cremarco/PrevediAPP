@@ -11,13 +11,22 @@ export function createTimer({
 } = {}) {
   let duration = 60;
   let remaining = duration;
+  let remainingMs = duration * 1000;
   let running = false;
   let started = false;
   let end = 0;
   let pending = null;
   let generation = 0;
 
-  const snapshot = () => ({ duration, remaining, running, started, end });
+  const snapshot = () => ({
+    duration,
+    remaining,
+    running,
+    started,
+    end,
+    elapsedMs:
+      duration * 1000 - (running ? Math.max(0, end - now()) : remainingMs),
+  });
   const stopTick = () => {
     generation++;
     if (pending !== null) cancel(pending);
@@ -27,11 +36,14 @@ export function createTimer({
   function tick() {
     pending = null;
     if (!running) return;
-    remaining = Math.max(0, Math.ceil((end - now()) / 1000));
+    remainingMs = Math.max(0, end - now());
+    remaining = Math.ceil(remainingMs / 1000);
     if (remaining === 0) {
       running = false;
       started = false;
       remaining = duration;
+      remainingMs = duration * 1000;
+      stopTick();
       onComplete(snapshot());
       return;
     }
@@ -52,16 +64,23 @@ export function createTimer({
       if (started || ![60, 180, 300].includes(seconds)) return;
       duration = seconds;
       remaining = seconds;
+      remainingMs = seconds * 1000;
     },
     toggle() {
       if (running) {
-        remaining = Math.max(1, Math.ceil((end - now()) / 1000));
+        remainingMs = Math.max(0, end - now());
+        if (remainingMs === 0) {
+          stopTick();
+          tick();
+          return;
+        }
+        remaining = Math.ceil(remainingMs / 1000);
         running = false;
         stopTick();
       } else {
         started = true;
         running = true;
-        end = now() + remaining * 1000;
+        end = now() + remainingMs;
         tick();
       }
     },
@@ -69,6 +88,7 @@ export function createTimer({
       stopTick();
       duration = seconds;
       remaining = seconds;
+      remainingMs = seconds * 1000;
       running = false;
       started = false;
       end = 0;

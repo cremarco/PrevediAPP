@@ -28,6 +28,7 @@ import {
   riskQuestions,
 } from "./session.js";
 import { createTimer, formatTime } from "./timer.js";
+import { createBreathingMotion } from "./breathing.js";
 import { createConversation } from "./conversation.js";
 import { resolveRoute, createScreenLoader } from "./router.js";
 import { diaryCSV, download } from "./export.js";
@@ -195,12 +196,15 @@ function render(focus = false) {
   const focusInfo = rememberFocus();
   chrome();
   chatResizeObserver?.disconnect();
+  breathingMotion.clear();
   elements.main.innerHTML = renderer({
     state: store.state,
     ui,
     timer: timer.snapshot(),
     chatBusy: conversation.busy,
+    breathing: breathingMotion.settings(),
   });
+  breathingMotion.mount();
   if (view === "assistente") fitChatLog($("#messages"));
   if (focus) {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -331,12 +335,9 @@ function syncDrawer() {
 const timer = createTimer({
   onTick(snapshot) {
     if (view !== "stress") return;
-    const time = $("#timer-time"),
-      phase = $("#breathing-phase");
+    const time = $("#timer-time");
     if (time) time.textContent = formatTime(snapshot.remaining);
-    if (phase)
-      phase.textContent =
-        (snapshot.duration - snapshot.remaining) % 8 < 4 ? "Inspira" : "Espira";
+    breathingMotion.update(snapshot);
   },
   onComplete(snapshot) {
     addEntry(store.state, {
@@ -351,6 +352,15 @@ const timer = createTimer({
       render();
     toast("Pausa completata e salvata nel diario. Prenditi il tuo tempo.");
   },
+});
+const breathingMotion = createBreathingMotion({
+  document,
+  mediaQuery: window.matchMedia("(prefers-reduced-motion: reduce)"),
+  getSnapshot: () => timer.snapshot(),
+  observe:
+    typeof IntersectionObserver === "function"
+      ? (callback) => new IntersectionObserver(callback, { threshold: 0.15 })
+      : null,
 });
 const conversation = createConversation({
   store,
@@ -689,6 +699,8 @@ document.addEventListener("click", (event) => {
     actions[control.dataset.action](control);
 });
 document.addEventListener("change", (event) => {
+  if (event.target.id === "breathing-motion")
+    breathingMotion.setEnabled(event.target.checked);
   if (event.target.id === "app-drawer") syncDrawer();
   if (event.target.id === "diary-date") {
     ui.diary.date =

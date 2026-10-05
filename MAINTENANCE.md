@@ -19,7 +19,8 @@ Refactoring ed estensione del prototipo del 5 ottobre 2026. JavaScript nativo a 
 | `assets/js/backup.js` | Validazione della copia JSON, limite 2 MB e importazione dei soli campi noti |
 | `assets/js/store.js` | Lettura, salvataggio, errori e sincronizzazione dei dati |
 | `assets/js/session.js` | Stato transitorio di filtri, piatto, quiz e test |
-| `assets/js/timer.js` | Orologio della respirazione e ciclo dei callback |
+| `assets/js/timer.js` | Orologio preciso della respirazione e ciclo dei callback |
+| `assets/js/breathing.js` | Fasi, Web Animation, pausa, visibilità e preferenze di movimento |
 | `assets/js/conversation.js` | Invio, risposta differita e cancellazione delle operazioni Pigna |
 | `assets/js/export.js` | CSV, Blob e download |
 | `assets/data.js` | Dati del prodotto, schema v1 e regole di punti, ricompense, piatto e test |
@@ -52,7 +53,7 @@ npm run build
 
 `npm run format` formatta JavaScript, script e test con Prettier. Le versioni di esbuild e Prettier sono fissate in `package.json`; `package-lock.json` rende riproducibili le dipendenze. GitHub Actions verifica formato, sintassi, test e build prima della pubblicazione.
 
-Il comando `check` verifica ricorsivamente la sintassi dei moduli. I 40 test coprono le regole del prodotto, compatibilità e guasti dello storage, callback del timer, risposte tardive della chat, route non valide, ripetizione di un caricamento fallito, rendering di tutte le schermate, validazione e modifiche del diario, annullamento, report e tappe, compatibilità del ripristino ed esportazione CSV.
+Il comando `check` verifica ricorsivamente la sintassi dei moduli. I 48 test coprono le regole del prodotto, compatibilità e guasti dello storage, callback del timer, risposte tardive della chat, route non valide, ripetizione di un caricamento fallito, rendering di tutte le schermate, validazione e modifiche del diario, annullamento, report e tappe, compatibilità del ripristino ed esportazione CSV.
 
 Per aggiungere una schermata:
 
@@ -103,3 +104,7 @@ La nuova verifica copre 17 route a 1440 × 1000, 1280 × 1000 e 390 × 844: 51 o
 La build di questa estensione richiede 71.992 byte JavaScript per il percorso e 114.806 byte per tutte le schermate, non compressi; CSS 129.371 byte. Le sei nuove scene occupano 318.918 byte complessivi, si riutilizzano fra route e hanno caricamento lazy, decodifica async e dimensioni dichiarate. I PNG master restano negli artefatti locali e non sono caricati dal sito.
 
 Verifica: 17 route a quattro larghezze (320, 390, 1280 e 1440 px), 68 osservazioni senza overflow o immagini rotte; 12 conferme sulle tre intestazioni compattate, 28 catture native e sette verifiche dei flussi. Formattazione, 40 test e build passati. Metriche nel rapporto `.impeccable/review/illustrations/metrics.json`; revisione grafica e documentazione nella stessa cartella. Le prove usano l’origine QA separata dalle anteprime dell’utente.
+
+## Animazione della respirazione
+
+Il timer mantiene i millisecondi per pausa e ripresa; gli otto test aggiunti verificano frazioni, confini di fase, scadenza e callback obsoleti. La Web Animation conserva una sola istanza per il componente montato e si interrompe in pausa, fuori vista o a scheda nascosta. Il movimento ridotto e il toggle mantengono una guida statica con fase, tempo e progresso. Le due metà del ciclo usano ease-in-out, su timeline lineare. La verifica della UI include il viewport utente 2723 × 1210 e telefoni da 390/320 px. [Documentazione e fonti](BREATHING-MOTION.md).

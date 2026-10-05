@@ -16,6 +16,8 @@ Il layout allinea navbar, contenuto e footer; le griglie si adattano alla larghe
 
 I colori Terra distinguono categorie, selezioni, messaggi personali e ricompense. Bordi dei campi e avvisi sono più leggibili, con etichette e icone indipendenti dal colore. Ruoli, contrasti e verifiche sono in [COLOR-AUDIT.md](COLOR-AUDIT.md).
 
+La guida alla respirazione mantiene l’animazione sincronizzata con il timer, conserva la posizione in pausa e offre una modalità statica. Comportamento e fonti sono in [BREATHING-MOTION.md](BREATHING-MOTION.md).
+
 Il codice è organizzato in moduli per schermate, stato, navigazione, timer e conversazione. La build minifica il JavaScript e carica le aree su richiesta. Struttura, compatibilità dei salvataggi e misure sono in [MAINTENANCE.md](MAINTENANCE.md).
 
 ## Cosa funziona
@@ -74,13 +76,13 @@ Modifica gli stili in `src/styles.css` e i moduli in `assets/js/`, poi ricompila
 | `assets/data.js` | Stato, punteggi, quiz e regole del test |
 | `assets/icons.js` | SVG Heroicons incorporati |
 | `src/styles.css` | Tema daisyUI Terra, font, tipografia e respirazione |
-| `tests/` | 40 test su dominio, storage, timer, chat, route, schermate, ripristino ed export |
+| `tests/` | 48 test su dominio, storage, timer, chat, route, schermate, ripristino ed export |
 | `PRODUCT.md` / `DESIGN.md` | Contesto del prodotto e sistema visivo |
 | `DAISYUI-AUDIT.md` | Componenti ufficiali adottati e controlli eseguiti |
 
 ## Verifica e fonti
 
-40 test automatici coprono le regole del prodotto, compatibilità e guasti dei salvataggi, timer, risposte tardive della chat, route, rendering delle schermate, modifica e annullamento delle registrazioni, report, ripristino ed esportazioni. Sono stati provati nel browser registrazioni, persistenza dopo ricarica, quiz, piatto e controlli del timer, oltre ai layout desktop e mobile e al caricamento sotto un sottopercorso.
+48 test automatici coprono le regole del prodotto, compatibilità e guasti dei salvataggi, timer, risposte tardive della chat, route, rendering delle schermate, modifica e annullamento delle registrazioni, report, ripristino ed esportazioni. Sono stati provati nel browser registrazioni, persistenza dopo ricarica, quiz, piatto e controlli del timer, oltre ai layout desktop e mobile e al caricamento sotto un sottopercorso.
 
 Il test è una traduzione educativa dello [strumento CDC e del suo punteggio](https://www.cdc.gov/diabetes/widgets/risktest/how-your-test-is-scored.html); non è una diagnosi o uno strumento clinico validato per questa app. Nell’app, “Informazioni e fonti” raccoglie i riferimenti educativi.
 

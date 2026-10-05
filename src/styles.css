@@ -38,11 +38,7 @@
   ::selection { background: var(--color-primary); color: var(--color-primary-content); }
   :focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }
 }
-/* A motion hook on the native avatar; no custom component appearance. */
-[data-breathing] { animation: breathe 8s ease-in-out infinite; animation-play-state: paused; }
-[data-breathing][data-running="true"] { animation-play-state: running; }
-@keyframes breathe { 0%, 100% { transform: scale(0.86); } 50% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
-  [data-breathing] { animation: none; transform: none; }
+  [data-breathing-core] { transform: none; }
 }

@@ -349,13 +349,13 @@
       },
       {
         "name": "breathing",
-        "value": "8s ease-in-out infinite; scale(0.86) → scale(1)",
-        "purpose": "Hook data-breathing sul componente avatar; paused quando la sessione è in pausa."
+        "value": "WAAPI 8s linear infinite; ease-in-out in ciascuna metà; scale(0.8) → scale(1) → scale(0.8); opacity 0.85 → 1 → 0.85",
+        "purpose": "Avatar nativo con Pigna; solo transform e opacity. Il timer conserva elapsedMs e sincronizza currentTime: posa congelata in pausa, ripresa e rimontaggio continui. Scheda nascosta e fuori vista sospendono il movimento, mentre il timer prosegue. Toggle disattivato, movimento ridotto o API indisponibile mantengono la guida statica con fase e progresso."
       },
       {
         "name": "reduced-motion",
         "value": "prefers-reduced-motion: reduce; 0.001ms; animation-iteration-count: 1; scroll-behavior: auto",
-        "purpose": "Regola globale; avatar della respirazione con animation:none e transform:none."
+        "purpose": "Regola CSS globale; il controller cancella la Web Animation della respirazione e mantiene la posa statica, fase, countdown e progresso. Il toggle nativo è disabilitato finché la preferenza è attiva."
       }
     ],
     "breakpoints": [
