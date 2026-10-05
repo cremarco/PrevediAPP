@@ -49,7 +49,7 @@ I percorsi degli asset sono relativi e la navigazione usa hash: funziona anche a
 
 ## Pubblicazione dal progetto sorgente
 
-Puoi estrarre `output/PREVEDIApp-sorgenti.zip` oppure caricare questo progetto, esclusi `node_modules/`, `dist/`, `output/` e `.impeccable/review/`, nel repository. In **Settings → Pages → Source** scegli **GitHub Actions**. Il workflow `.github/workflows/pages.yml` esegue i controlli, compila il CSS e pubblica `dist/` a ogni push su `main`. È disponibile anche l’avvio manuale da Actions. [Documentazione ufficiale dei workflow Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+Puoi estrarre `output/PREVEDIApp-sorgenti.zip` oppure caricare questo progetto, esclusi `node_modules/`, `dist/`, `output/` e `.impeccable/review/`, nel repository. In **Settings → Pages → Source** scegli **GitHub Actions**. Il workflow `.github/workflows/pages.yml` esegue i controlli, compila il CSS e pubblica `dist/` a ogni push su `main`, usando un unico job e runner. È disponibile anche l’avvio manuale da Actions. [Documentazione ufficiale dei workflow Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
 Per modificare e ricompilare gli stili, con Node.js 24 e npm:
 
