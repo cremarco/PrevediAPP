@@ -30,6 +30,15 @@
         ],
         "createdAt": "2026-10-05T18:46:13.016Z",
         "reason": "Agent: finding comes from native daisyUI drawer and dock CSS. The app sidebar remains fixed at 256px and animates translate; the dock width transition applies only to its small absolutely positioned marker. No application width, height, padding or margin animation was introduced; native daisyUI behavior is a user constraint."
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-05T20:48:17.595Z",
+        "reason": "Agent: targeted detector identifies the native daisyUI alert wrapper. Production DOM computed padding is 12px top/bottom and 16px left/right for the storage and toast alerts, with 14px text and a 1px border. Installed daisyUI alert.css supplies padding-block .75rem and padding-inline 1rem; the detector misses imported component CSS. No padding fix is needed."
       }
     ]
   }
