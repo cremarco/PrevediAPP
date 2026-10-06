@@ -88,7 +88,7 @@ export function ingredientPicker(items = [], target = "all") {
         .join("")}</div></fieldset>`;
     })
     .join("");
-  return `<div class="join grid w-full grid-cols-2 sm:grid-cols-4" role="group" aria-label="Mostra ingredienti del gruppo">${filters}</div><div id="plate-foods-target" class="grid gap-5" tabindex="-1" aria-label="Ingredienti ${groupLabel(group).toLocaleLowerCase("it-IT")}">${sections}</div>`;
+  return `<div class="join join-vertical w-full sm:join-horizontal" role="group" aria-label="Mostra ingredienti del gruppo">${filters}</div><div id="plate-foods-target" class="grid gap-5" tabindex="-1" aria-label="Ingredienti ${groupLabel(group).toLocaleLowerCase("it-IT")}">${sections}</div>`;
 }
 
 export function fridgeMarket(ids = []) {

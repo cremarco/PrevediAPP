@@ -4,7 +4,7 @@
 
 App statica interattiva ricostruita da [Percorso Benessere Prediabete su Stitch](https://stitch.withgoogle.com/projects/4965067135037654911). Mantiene il tema Terra e le mascotte; le pagine della fonte sono collegate in un unico percorso locale. HTML, JavaScript a moduli, Tailwind CSS 4, daisyUI 5 e Heroicons outline. Font, immagini, icone e CSS sono locali; non servono chiavi API.
 
-L’interfaccia usa componenti daisyUI reali, con parti e stati ufficiali, personalizzati attraverso il tema Terra. I precedenti componenti costruiti con CSS proprio sono stati sostituiti. La mappatura e la verifica sono in [DAISYUI-AUDIT.md](DAISYUI-AUDIT.md).
+L’interfaccia usa componenti originali daisyUI 5.7.47, con parti e stati ufficiali; tema Terra e utility Tailwind ne personalizzano lo stile e il layout. Piatto, dispensa, Frigo Sano e respiro sono composizioni dell’app con questi componenti. Hover, pressione, selezione e disabilitazione conservano gli stati nativi; timer e regole del prodotto appartengono all’app. La mappatura, le tre correzioni di conformità e i limiti delle prove sono in [DAISYUI-AUDIT.md](DAISYUI-AUDIT.md).
 
 Le icone usano i nomi e gli SVG originali Heroicons, con scelte coerenti fra le schermate. Il catalogo non include i singoli alimenti: i pulsanti usano nomi e icone di azione/selezione. Scelte e verifiche sono in [HEROICONS-AUDIT.md](HEROICONS-AUDIT.md).
 
@@ -85,7 +85,7 @@ Modifica gli stili in `src/styles.css` e i moduli in `assets/js/`, poi ricompila
 | `assets/js/` | Controller, servizi, helper daisyUI e schermate |
 | `assets/data.js` | Stato, punteggi, quiz e regole del test |
 | `assets/icons.js` | SVG Heroicons incorporati |
-| `src/styles.css` | Tema daisyUI Terra, font, tipografia e respirazione |
+| `src/styles.css` | Tema daisyUI Terra, font, tipografia, focus e riduzione del movimento |
 | `tests/` | 113 test su dominio, storage e recupero, sessioni, timer, widget e movimento, cataloghi, glucosio, route, schermate, ripristino ed export |
 | `PRODUCT.md` / `DESIGN.md` | Contesto del prodotto e sistema visivo |
 | `DAISYUI-AUDIT.md` | Componenti ufficiali adottati e controlli eseguiti |

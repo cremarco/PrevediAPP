@@ -13,7 +13,7 @@ Refactoring ed estensione del prototipo del 5 ottobre 2026, con correzioni dell�
 | `assets/js/router.js` | Validazione delle route e caricamento su richiesta delle schermate |
 | `assets/js/views/` | Renderer delle aree originali e moduli di esplorazione alimenti, contenuti guidati, social, foresta e glucosio |
 | `assets/js/ui/components.js` | Helper HTML condivisi con struttura daisyUI nativa |
-| `assets/js/ui/nutrition-widgets.js` | Settori del piatto, picker, mercato e ripiani daisyUI |
+| `assets/js/ui/nutrition-widgets.js` | Settori del piatto, picker, mercato e ripiani composti con componenti originali daisyUI |
 | `assets/js/ui/food-art.js` | Mappa dei nove ingredienti nell’atlante raster, presentati in `avatar` |
 | `assets/js/ui/dialogs.js` | Registrazione, modifica e riepilogo di ripristino con dialogo nativo |
 | `assets/js/records.js` | Validazione di date/voci, modifica atomica, rimozione/annullamento e messaggi locali |
@@ -32,9 +32,15 @@ Refactoring ed estensione del prototipo del 5 ottobre 2026, con correzioni dell�
 | `assets/js/export.js` | CSV, Blob e download |
 | `assets/data.js` | Dati del prodotto, schema v1 e regole di punti, ricompense, piatto e test |
 | `assets/icons.js` | SVG ufficiali Heroicons |
-| `src/styles.css` | Tema Terra, font, tipografia, accessibilità e respirazione |
+| `src/styles.css` | Tema Terra, font, tipografia, focus e riduzione del movimento |
 
 Le schermate ricevono uno snapshot esplicito `{ state, ui, timer, chatBusy }` e restituiscono HTML. Non scrivono nel DOM o nel salvataggio. Il controller possiede il DOM e gli eventi; timer e conversazione possiedono i loro callback. Questo consente di verificare tutte le schermate in Node senza una simulazione del browser.
+
+## Contratto dei componenti daisyUI
+
+Usa componenti originali daisyUI 5.7.47 e le loro parti documentate. Terra e utility Tailwind personalizzano stile e layout; non ricostruire parti, pseudo-elementi o stati con CSS dell’app. Hover, pressione, selezione e disabilitazione conservano le regole della libreria e gli attributi HTML/ARIA effettivi. Timer, regole del piatto, dati e animazioni di presentazione rimangono responsabilità applicative. Piatto e frigo sono composizioni di primitivi originali, senza componenti daisyUI omonimi.
+
+L’audit del 6 ottobre ripristina tre contratti: i filtri del piatto usano `join join-vertical sm:join-horizontal` con `join-item`; il trigger mobile conserva `drawer-button` perché il focus sul checkbox invisibile raggiunga il label; le azioni dei gruppi conservano `list-col-wrap` su telefono e `sm:row-start-1` sulla prima riga da `sm`. Le correzioni aggiungono classi originali o utility di layout, senza cambiare handler o regole del prodotto. Confronto col sistema, prove, eccezioni circoscritte del detector e stato della revisione sono in [DAISYUI-AUDIT.md](DAISYUI-AUDIT.md). `DESIGN.md` e `.impeccable/design.json` restano conservati.
 
 ## Stato e compatibilità
 

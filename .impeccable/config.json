@@ -39,6 +39,33 @@
         ],
         "createdAt": "2026-10-05T20:48:17.595Z",
         "reason": "Agent: targeted detector identifies the native daisyUI alert wrapper. Production DOM computed padding is 12px top/bottom and 16px left/right for the storage and toast alerts, with 14px text and a 1px border. Installed daisyUI alert.css supplies padding-block .75rem and padding-inline 1rem; the detector misses imported component CSS. No padding fix is needed."
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgb(0, 0, 0)",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-06T02:21:14.978Z",
+        "reason": "Agent: detector reports a black html background in its standalone render, but the verified production DOM is html rgb(255,255,255) and body rgb(245,244,239) from the Terra theme. No black page background exists in source or live QA; renderer-specific false positive."
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "3.40282e38px",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-06T02:21:14.994Z",
+        "reason": "User requires original daisyUI components. This is the exact native full-round radius of daisyUI btn-circle/rounded-full, not a new application radius or recreated control. Native component geometry is intentional."
+      },
+      {
+        "rule": "repeating-stripes-gradient",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-06T02:21:15.006Z",
+        "reason": "Agent: compiled stylesheet stripes are only the original daisyUI progress:indeterminate rule. Application progress elements use explicit numeric values; no decorative repeating gradient occurs in page or app CSS. Preserve the original daisyUI component implementation."
       }
     ]
   }
