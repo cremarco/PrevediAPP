@@ -1,0 +1,55 @@
+{
+  "asset": "pine-cone-v1",
+  "version": 1,
+  "tool": "built-in image_gen.imagegen",
+  "mode": "generate",
+  "transparent_background": true,
+  "selected_source": "/Users/marco/.codex/generated_images/01a10f18-f446-70e0-9308-cd85ea804a15/exec-a12b1222-dd6b-4281-b15d-689e03c30c32.png",
+  "destination": "artwork/pine-v1/cone.png",
+  "style_references": [
+    "assets/images/scene-nutrition-v1.webp",
+    "assets/images/reward-pinecones-v1.webp"
+  ],
+  "prompt": "cone.prompt.txt",
+  "inspection": {
+    "mode": "RGBA",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "alpha_bbox": [
+      89,
+      21,
+      1210,
+      1212
+    ],
+    "fully_transparent_pixels": 1231248,
+    "fully_opaque_pixels": 276,
+    "total_pixels": 1572516,
+    "corners_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "alpha_threshold_bounds": {
+      "16": [
+        281,
+        292,
+        1066,
+        973
+      ],
+      "128": [
+        281,
+        294,
+        1066,
+        972
+      ]
+    }
+  },
+  "notes": "Original CODEX_HOME output retained. Master copied without crop, resize, conversion or pixel edits. Root agent handles mechanical WebP conversion and prompt embedding."
+}

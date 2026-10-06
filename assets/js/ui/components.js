@@ -83,7 +83,8 @@ export function alberello(state, cls = "h-64 w-64 sm:h-72 sm:w-72") {
 }
 
 export function heading(title, description, actions = "") {
-  return `<div class="mb-6 flex flex-wrap items-start justify-between gap-4 sm:mb-7"><div class="min-w-0 max-w-full"><h1 class="break-words [overflow-wrap:anywhere]">${title}</h1>${description ? `<p class="mt-2 max-w-[72ch] text-base-content/85">${description}</p>` : ""}</div>${actions ? `<div class="flex min-w-0 max-w-full flex-wrap items-center gap-2">${actions}</div>` : ""}</div>`;
+  const pine = `<figure class="pointer-events-none shrink-0" aria-hidden="true"><img src="assets/images/pine-branch-v1.webp" alt="" width="576" height="384" class="h-10 w-20 object-contain sm:h-14 sm:w-24" data-pine-motion="branch" decoding="async"></figure>`;
+  return `<div class="mb-6 flex flex-wrap items-start justify-between gap-4 sm:mb-7"><div class="min-w-0 max-w-full"><h1 class="break-words [overflow-wrap:anywhere]">${title}</h1>${description ? `<p class="mt-2 max-w-[72ch] text-base-content/85">${description}</p>` : ""}</div><div class="${actions ? "flex" : "hidden min-[480px]:flex"} min-w-0 max-w-full flex-wrap items-center gap-3">${actions ? `<div class="flex min-w-0 max-w-full flex-wrap items-center gap-2">${actions}</div>` : ""}${pine}</div></div>`;
 }
 
 export function empty(title, text, action = "") {

@@ -1,0 +1,6 @@
+Use case: background-extraction.
+Image 1 is the edit target: the generated pine frond.
+Change only the isolation and framing of this existing illustration. Preserve the exact two green needle-bearing twigs, thin brown stem, small bud, colors, painted texture and natural contours; do not redraw or add objects.
+Remove all diffuse green and brown glow and all haze outside the physical pine needles, stem and bud. Every open gap between the needles and every pixel around the plant must have real fully transparent alpha, with no painted background, shadow, halo or checkerboard. Preserve actual painted highlights within the plant.
+Keep the complete frond centered, and reduce its overall size uniformly just enough to leave at least 12 percent fully transparent margin between the plant and every canvas edge. No clipped needles or stem. Keep the same mostly horizontal composition and slight diagonal.
+Constraints: one frond only; no text, watermark, logo, UI, scene, soil, pot, face or character.

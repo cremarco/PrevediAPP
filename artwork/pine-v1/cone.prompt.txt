@@ -1,0 +1,8 @@
+Use case: illustration-story.
+Asset type: one isolated botanical accent for PREVEDIApp, intended to remain clear around 64 pixels and gently rotate or settle.
+Scene/backdrop: genuinely transparent background with real alpha; every pixel outside the physical subject is fully transparent, including all open gaps.
+Subject: one small natural brown pinecone in a three-quarter view, with broad recognizable overlapping woody scales and one tiny tuft of green pine needles immediately beside it. Only one pinecone and the tiny needle tuft.
+Style/medium: clean botanical watercolor and gouache illustration, matte earthy paint, organic dark brown contours, gentle restrained shading. Natural, calm and warm.
+Composition/framing: compact centered silhouette occupying about 65 percent of the canvas, with generous fully transparent margins on every side. The complete pinecone and every needle are visible, with no clipped edges.
+Color palette: warm brown #6B6358, natural chestnut and tan, muted ochre #C4A66A for restrained highlights, forest green #4A7C59 and sage for the tiny needles.
+Constraints: isolated cutout only; no character, eyes, face, limbs, logo, UI, badge, text, watermark, scene, soil, moss, pot, dew, backdrop, checkerboard, shadow behind the subject, cast shadow, glow or haze.

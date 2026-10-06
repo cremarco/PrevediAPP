@@ -1,0 +1,8 @@
+Use case: illustration-story.
+Asset type: one isolated botanical accent for PREVEDIApp, intended to remain legible around 64 pixels and gently sway beside a page title.
+Scene/backdrop: genuinely transparent background with real alpha.
+Subject: one short natural pine frond, consisting of two small needle-bearing twigs joined by a thin brown stem and one small bud. The green needles are botanically recognizable, gathered into two simple clear groups.
+Style/medium: clean botanical watercolor and gouache illustration, matte earthy color, organic dark brown contours, restrained soft painted shading. Gentle, natural and calm.
+Composition/framing: a mostly horizontal silhouette on a slight diagonal, centered with generous transparent margins; every needle and stem fully inside the canvas. One frond only.
+Color palette: forest green #4A7C59, sage green, warm brown #6B6358, a restrained muted ochre #C4A66A accent on the tiny bud.
+Constraints: complete isolated cutout; no pinecone, scene, soil, pot, characters, face, logo, UI, badge, enclosing circle, text, watermark, long cast shadow, painted backdrop or checkerboard.

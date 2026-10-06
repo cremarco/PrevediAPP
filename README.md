@@ -20,6 +20,8 @@ La guida alla respirazione mantiene l’animazione sincronizzata con il timer, c
 
 Piatto, dispensa e Frigo Sano usano ingredienti illustrati e azioni native: le porzioni occupano quattro settori, le scelte riempiono i ripiani e un breve movimento conferma il passaggio. Il respiro distingue fase, quattro tempi e progresso della pausa. Comportamenti, modalità statiche e provenienza dei due raster sono in [WIDGETS.md](WIDGETS.md).
 
+Una fronda nei titoli e una pigna nel footer si muovono delicatamente, con il toggle nativo «Pino animato». Il movimento si ferma durante dialoghi e timer, rispetta la preferenza del dispositivo e mantiene gli asset statici come fallback. Comportamento, manutenzione, prompt e prove sono in [PINE-MOTION.md](PINE-MOTION.md).
+
 Il codice è organizzato in moduli per schermate, stato, navigazione, timer e conversazione. La build minifica il JavaScript e carica le aree su richiesta. Struttura, compatibilità dei salvataggi e misure sono in [MAINTENANCE.md](MAINTENANCE.md).
 
 La verifica dell’export completo di Stitch ha identificato 79 schermate HTML con anteprima, riunite in 37 famiglie funzionali. Tutte hanno una destinazione nell’app: varianti, domande e dialoghi condividono le stesse viste quando descrivono lo stesso flusso. Sono state aggiunte 24 route nominali, per 41 route e 55 varianti indirizzabili. La mappa completa e gli adattamenti sono in [STITCH-COVERAGE.md](STITCH-COVERAGE.md). Le sei nuove immagini delle ricompense, di cui due generate con Imagegen, sono documentate in [STITCH-ASSETS.md](STITCH-ASSETS.md).
@@ -86,19 +88,21 @@ Modifica gli stili in `src/styles.css` e i moduli in `assets/js/`, poi ricompila
 | `assets/data.js` | Stato, punteggi, quiz e regole del test |
 | `assets/icons.js` | SVG Heroicons incorporati |
 | `src/styles.css` | Tema daisyUI Terra, font, tipografia, focus e riduzione del movimento |
-| `tests/` | 113 test su dominio, storage e recupero, sessioni, timer, widget e movimento, cataloghi, glucosio, route, schermate, ripristino ed export |
+| `tests/` | 123 test su dominio, storage e recupero, sessioni, timer, widget e movimento, cataloghi, glucosio, route, schermate, ripristino ed export |
 | `PRODUCT.md` / `DESIGN.md` | Contesto del prodotto e sistema visivo |
 | `DAISYUI-AUDIT.md` | Componenti ufficiali adottati e controlli eseguiti |
 
 ## Verifica e fonti
 
-113 test automatici coprono le regole del prodotto, compatibilità e guasti dei salvataggi, protezione del file originale, recupero e sostituzione atomici, sessioni indipendenti dei quiz e rami del test educativo, timer, composizione e rimozione delle porzioni, ripiani, feedback animato e confini del respiro, risposte tardive della chat, route, rendering, diario, cataloghi, sfide, registro manuale del glucosio, ripristino ed esportazioni. Formattazione, controlli e build sono parte della pubblicazione.
+123 test automatici coprono le regole del prodotto, compatibilità e guasti dei salvataggi, protezione del file originale, recupero e sostituzione atomici, sessioni indipendenti dei quiz e rami del test educativo, timer, composizione e rimozione delle porzioni, ripiani, feedback animato, confini del respiro e lifecycle del pino, risposte tardive della chat, route, rendering, diario, cataloghi, sfide, registro manuale del glucosio, ripristino ed esportazioni. Formattazione, controlli e build sono parte della pubblicazione.
 
 La verifica dell’estensione Stitch comprende 170 catture native: 55 varianti a 320, 390 e 1440 px, più cinque viste a 2723 px. Le 165 misure route/larghezza non rilevano overflow del documento, immagini rotte o icone di fallback. I flussi sono stati provati in un’origine QA separata dai salvataggi delle anteprime dell’utente. Il verdetto finale chiude i due rilievi della revisione: la conclusione della pausa preserva bozza e focus del profilo, e i sei nuovi nomi delle ricompense restano leggibili nel Giardino a 320 e 1440 px. La revisione indipendente controlla sia la copertura della fonte sia la resa dell’interfaccia; ambito, prove e limiti sono descritti in [STITCH-COVERAGE.md](STITCH-COVERAGE.md) e [MAINTENANCE.md](MAINTENANCE.md#completamento-delle-pagine-stitch). Rapporti e catture di sviluppo in `.impeccable/review/` sono esclusi dal repository pubblicato. La verifica è euristica e riguarda le superfici e i casi esaminati; il punteggio della critica precedente non è stato ricalcolato.
 
 Questi conteggi di catture descrivono la build Stitch precedente all’estensione dei widget. Il totale resta 41 route e 55 varianti indirizzabili; la verifica dei quattro widget e i limiti delle prove correnti sono in [WIDGETS.md](WIDGETS.md#verifica-e-continuità-del-sistema).
 
 Per i widget, formato, controlli, 113 test e build sono passati. Le 16 osservazioni delle quattro route a 320, 390, 1440 e 1280 px non rilevano overflow del documento o immagini rotte. Il verdetto indipendente chiude i tre rilievi mirati su etichette mobili, cinque steps del gioco e cancellazione del movimento allo scroll; la conclusione riguarda questi casi e conserva i limiti delle prove statiche, senza una nuova critica generale o certificazione di accessibilità e prestazioni.
+
+Per il pino, i due passaggi di verifica coprono 220 misure delle 55 varianti a 320 e 1280 px, senza overflow, immagini rotte o titoli errati. Formato e 123 test sono passati; la revisione finale dispone `ship` senza correzioni materiali. Le prove e i loro limiti sono in [PINE-MOTION.md](PINE-MOTION.md#verifica-e-continuità-del-sistema).
 
 Il test è una traduzione educativa dello [strumento CDC e del suo punteggio](https://www.cdc.gov/diabetes/widgets/risktest/how-your-test-is-scored.html); non è una diagnosi o uno strumento clinico validato per questa app. Nell’app, “Informazioni e fonti” raccoglie i riferimenti educativi.
 

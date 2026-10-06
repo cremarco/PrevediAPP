@@ -1,0 +1,30 @@
+[
+  {
+    "id": "branch",
+    "file": "assets/images/pine-branch-v1.webp",
+    "master": "artwork/pine-v1/branch.png",
+    "prompt": "artwork/pine-v1/branch.prompt.txt",
+    "mode": "built-in image_gen",
+    "width": 576,
+    "height": 384,
+    "bytes": 78920,
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "id": "cone",
+    "file": "assets/images/pine-cone-v1.webp",
+    "master": "artwork/pine-v1/cone.png",
+    "prompt": "artwork/pine-v1/cone.prompt.txt",
+    "mode": "built-in image_gen",
+    "width": 256,
+    "height": 256,
+    "bytes": 12952,
+    "alpha": [
+      0,
+      255
+    ]
+  }
+]

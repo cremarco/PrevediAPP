@@ -36,6 +36,7 @@ import {
 import { createTimer, formatTime } from "./timer.js";
 import { createBreathingMotion } from "./breathing.js";
 import { createWidgetMotion } from "./widget-motion.js";
+import { createPineMotion } from "./pine-motion.js";
 import { createConversation } from "./conversation.js";
 import { resolveRoute, createScreenLoader } from "./router.js";
 import { diaryCSV, download } from "./export.js";
@@ -321,6 +322,7 @@ function render(focus = false) {
     window.scrollTo({ top: 0, behavior: "instant" });
     elements.main.focus({ preventScroll: true });
   } else restoreFocus(focusInfo);
+  syncPineDetails();
 }
 async function navigate() {
   const route = resolveRoute(location.hash);
@@ -386,7 +388,7 @@ function openEntry(type, id = "") {
     view === "diario" ? ui.diary.date : localDate(),
     entry,
   );
-  elements.dialog.showModal();
+  showDialog();
 }
 function openMeal(label, notes = "") {
   openEntry("meal");
@@ -458,7 +460,7 @@ async function previewBackup(file, input) {
     status.textContent =
       "Copia verificata. Conferma il ripristino nel riepilogo.";
     elements.dialogContent.innerHTML = backupDialog(pendingBackup, file.name);
-    elements.dialog.showModal();
+    showDialog();
   } catch (error) {
     if (request === backupVersion && route === navigationVersion) {
       status.textContent =
@@ -506,6 +508,7 @@ const timer = createTimer({
     const time = $("#timer-time");
     if (time) time.textContent = formatTime(snapshot.remaining);
     breathingMotion.update(snapshot);
+    syncPineDetails();
   },
   onComplete(snapshot) {
     if (!allowWrite()) return;
@@ -535,6 +538,57 @@ const widgetMotion = createWidgetMotion({
   document,
   mediaQuery: window.matchMedia("(prefers-reduced-motion: reduce)"),
 });
+const PINE_PREFERENCE_KEY = "prevediapp.pine-motion.v1";
+const pineMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
+let pinePreferenceSaved = true;
+const readPinePreference = () => {
+  try {
+    return window.localStorage.getItem(PINE_PREFERENCE_KEY) !== "false";
+  } catch {
+    return true;
+  }
+};
+const pineMotion = createPineMotion({
+  document,
+  mediaQuery: pineMedia,
+  enabled: readPinePreference(),
+  observe:
+    typeof IntersectionObserver === "function"
+      ? (callback) => new IntersectionObserver(callback, { threshold: 0.15 })
+      : null,
+});
+function syncPineDetails() {
+  const timedTask =
+    (view === "stress" && timer.snapshot().running) ||
+    (view === "sessione" &&
+      guidedTimers.get(ui.guided.sessionId)?.snapshot().running) ||
+    (view === "frigo-sano" && fridgeTimer.snapshot().running);
+  pineMotion.setSuspended(elements.dialog.open || Boolean(timedTask));
+  pineMotion.mount();
+  const settings = pineMotion.settings();
+  const toggle = $("#pine-motion-toggle");
+  if (toggle) {
+    toggle.checked = settings.enabled;
+    toggle.disabled = settings.reduced;
+    if (settings.reduced || !pinePreferenceSaved)
+      toggle.setAttribute("aria-describedby", "pine-motion-note");
+    else toggle.removeAttribute("aria-describedby");
+  }
+  const note = $("#pine-motion-note");
+  if (note) {
+    note.hidden = !settings.reduced && pinePreferenceSaved;
+    note.textContent = settings.reduced
+      ? "Movimento ridotto attivo sul dispositivo."
+      : pinePreferenceSaved
+        ? ""
+        : "Preferenza valida in questa sessione.";
+  }
+}
+function showDialog() {
+  pineMotion.setSuspended(true);
+  elements.dialog.showModal();
+}
+pineMedia.addEventListener("change", syncPineDetails);
 const guidedTimers = new Map(
   meditations.map((session) => {
     const duration = session.minutes * 60;
@@ -547,6 +601,7 @@ const guidedTimers = new Map(
         if (time) time.textContent = formatTime(snapshot.remaining);
         const progress = $("#guided-progress");
         if (progress) progress.value = snapshot.duration - snapshot.remaining;
+        syncPineDetails();
       },
       onComplete(snapshot) {
         if (!allowWrite()) return;
@@ -587,6 +642,7 @@ const fridgeTimer = createTimer({
     if (time) time.textContent = formatTime(snapshot.remaining);
     const progress = $("#fridge-game-progress");
     if (progress) progress.value = snapshot.remaining;
+    syncPineDetails();
   },
   onComplete() {
     const game = ui.discovery.fridgeGame;
@@ -1179,7 +1235,7 @@ const actions = {
   "export-csv": exportCSV,
   "clear-chat": () => {
     elements.dialogContent.innerHTML = `${dialogHeading("Cancellare la conversazione?")}<p>I messaggi con Pigna verranno rimossi da questo browser. Il diario e i progressi restano disponibili.</p><div class="modal-action"><button class="btn btn-ghost" data-action="close-dialog">Annulla</button><button class="btn btn-error" data-action="clear-chat-confirmed">Cancella la conversazione</button></div>`;
-    elements.dialog.showModal();
+    showDialog();
   },
   "clear-chat-confirmed": () => {
     conversation.clear();
@@ -1206,7 +1262,7 @@ const actions = {
   "confirm-reset": () => {
     $("#dialog-content").innerHTML =
       `<div class="flex items-start justify-between gap-3 mb-4"><h2 id="dialog-title">Ricominciare il percorso?</h2><button class="btn btn-ghost btn-circle shrink-0" data-action="close-dialog" aria-label="Chiudi">${icon("x-mark")}</button></div><p>Tutti i dati di PREVEDIApp saranno rimossi da questo browser. Puoi esportare una copia prima di proseguire.</p><div class="modal-action flex-wrap"><button class="btn btn-outline" data-action="export-json">Esporta una copia</button><button class="btn btn-error" data-action="reset-confirmed">Cancella i dati</button></div><form method="dialog" class="mt-3"><button class="btn btn-ghost w-full">Annulla</button></form>`;
-    $("#entry-dialog").showModal();
+    showDialog();
   },
   "reset-confirmed": () => {
     if (!store.reset()) {
@@ -1217,6 +1273,13 @@ const actions = {
       return;
     }
     conversation.cancelPending();
+    try {
+      window.localStorage.removeItem(PINE_PREFERENCE_KEY);
+      pinePreferenceSaved = true;
+    } catch {
+      pinePreferenceSaved = false;
+    }
+    pineMotion.setEnabled(true);
     resetAllTimers();
     Object.assign(ui, initialSession());
     elements.dialog.close();
@@ -1305,6 +1368,19 @@ document.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("change", (event) => {
+  if (event.target.id === "pine-motion-toggle") {
+    pineMotion.setEnabled(event.target.checked);
+    try {
+      window.localStorage.setItem(
+        PINE_PREFERENCE_KEY,
+        String(event.target.checked),
+      );
+      pinePreferenceSaved = true;
+    } catch {
+      pinePreferenceSaved = false;
+    }
+    syncPineDetails();
+  }
   if (event.target.id === "breathing-motion")
     breathingMotion.setEnabled(event.target.checked);
   if (event.target.id === "app-drawer") syncDrawer();
@@ -1671,9 +1747,16 @@ document.addEventListener("input", (event) => {
 elements.dialog.addEventListener("close", () => {
   pendingBackup = null;
   backupVersion++;
+  syncPineDetails();
 });
 window.addEventListener("hashchange", navigate);
 window.addEventListener("storage", (event) => {
+  if (event.key === PINE_PREFERENCE_KEY || event.key === null) {
+    pineMotion.setEnabled(event.newValue !== "false");
+    pinePreferenceSaved = true;
+    syncPineDetails();
+    if (event.key === PINE_PREFERENCE_KEY) return;
+  }
   if (event.key !== KEY && event.key !== null) return;
   if (store.sync(event.newValue)) {
     conversation.cancelPending();

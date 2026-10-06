@@ -66,6 +66,24 @@
         ],
         "createdAt": "2026-10-06T02:21:15.006Z",
         "reason": "Agent: compiled stylesheet stripes are only the original daisyUI progress:indeterminate rule. Application progress elements use explicit numeric values; no decorative repeating gradient occurs in page or app CSS. Preserve the original daisyUI component implementation."
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "5",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-06T03:29:41.682Z",
+        "reason": "Agent: static detector misparses the original daisyUI toggle-sm size multiplier 5 as a border radius. The native toggle computes to 11.5px in the compiled app, from the Terra .5rem selector token plus the library padding and border formula. User requires unchanged original component geometry."
+      },
+      {
+        "rule": "design-system-radius",
+        "value": ".125),calc(.5rem",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-06T03:29:41.742Z",
+        "reason": "Agent: advisory is an incomplete fragment of the original daisyUI toggle calculated border radius, not an application radius. Verified live pine toggle radius is 11.5px from the native selector/padding/border formula. Preserve the original component required by the user."
       }
     ]
   }

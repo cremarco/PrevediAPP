@@ -1,0 +1,58 @@
+{
+  "asset": "pine-branch-v1",
+  "version": 1,
+  "tool": "built-in image_gen.imagegen",
+  "mode": "generate_then_targeted_edit",
+  "transparent_background": true,
+  "selected_source": "/Users/marco/.codex/generated_images/01a10f18-f446-70e0-9308-cd85ea804a15/exec-25543f5d-4871-454e-a628-64036adfaa3b.png",
+  "original_source": "/Users/marco/.codex/generated_images/01a10f18-f446-70e0-9308-cd85ea804a15/exec-da4fe2d6-5dcd-452e-8502-66a6d84fc563.png",
+  "destination": "artwork/pine-v1/branch.png",
+  "style_references": [
+    "assets/images/scene-nutrition-v1.webp",
+    "assets/images/reward-pinecones-v1.webp"
+  ],
+  "prompts": {
+    "initial": "branch.initial.prompt.txt",
+    "selected": "branch.prompt.txt"
+  },
+  "inspection": {
+    "mode": "RGBA",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "alpha_extrema": [
+      0,
+      254
+    ],
+    "alpha_bbox": [
+      65,
+      29,
+      1510,
+      1008
+    ],
+    "fully_transparent_pixels": 1101401,
+    "total_pixels": 1572864,
+    "corners_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "alpha_threshold_bounds": {
+      "16": [
+        127,
+        52,
+        1410,
+        963
+      ],
+      "128": [
+        128,
+        53,
+        1410,
+        962
+      ]
+    }
+  },
+  "notes": "Original CODEX_HOME outputs retained. Master copied without crop, resize, conversion or pixel edits. Root agent handles mechanical WebP conversion and prompt embedding."
+}
