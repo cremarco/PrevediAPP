@@ -17,6 +17,8 @@ import {
   wellnessNav,
   communityNav,
   dockNav,
+  routeParents,
+  exploreNav,
 } from "./config.js";
 import { icon, heading, card } from "./ui/components.js";
 import { entryDialog, backupDialog, dialogHeading } from "./ui/dialogs.js";
@@ -46,6 +48,32 @@ import {
   validDate,
 } from "./records.js";
 import { habitLabels, pantryPlate } from "./insights.js";
+import {
+  catalogFoods,
+  foodCategories,
+  recipes,
+  recipeById,
+  initialFridgeGame,
+  answerFridgeGame,
+} from "./nutrition-catalog.js";
+import {
+  exercises,
+  sleepRoutine,
+  meditations,
+  safeSession,
+  validExerciseIds,
+  exerciseLabel,
+  validExerciseMinutes,
+  validRoutineIds,
+} from "./guided-content.js";
+import { groups, groupCategories, challenges } from "./social-catalog.js";
+import {
+  GLUCOSE_LIMIT,
+  validateReading,
+  normalizedReadings,
+  glucoseReport,
+  glucoseCSV,
+} from "./glucose.js";
 
 // DOM ownership, navigation and delegated events live here; screens remain pure renderers.
 const $ = (selector) => document.querySelector(selector);
@@ -119,13 +147,7 @@ function toast(message, undo = null) {
 }
 function navLink([id, symbol, label], mobile = false) {
   const parent =
-    view === "quiz"
-      ? ui.quiz.category
-      : ["piatto", "frigo"].includes(view)
-        ? "alimentazione"
-        : ["rischio", "notifiche", "informazioni"].includes(view)
-          ? "percorso"
-          : view;
+    view === "quiz" ? ui.quiz.category : routeParents[view] || view;
   const active =
     view === id ||
     parent === id ||
@@ -139,10 +161,26 @@ function navLink([id, symbol, label], mobile = false) {
     ? `<button class="${active ? "dock-active text-primary" : ""}" data-action="navigate" data-route="${id}" ${current}>${icon(symbol)}<span class="dock-label">${label}</span></button>`
     : `<li><a href="#${id}" class="min-h-11 ${active ? "menu-active bg-primary text-primary-content" : ""}" ${current}>${icon(symbol)}${label}</a></li>`;
 }
+function exploreMenu() {
+  const open =
+    $("#explore-menu")?.open ||
+    exploreNav.some(([id]) => id === view) ||
+    view === "sessione";
+  return `<li><details id="explore-menu" ${open ? "open" : ""}><summary class="min-h-11">${icon("magnifying-glass")}Esplora</summary><ul>${exploreNav.map((item) => navLink(item)).join("")}</ul></details></li>`;
+}
 function chrome() {
-  const routeKey = view === "quiz" ? `quiz/${ui.quiz.category}` : view;
+  const routeKey =
+    view === "quiz"
+      ? `quiz/${ui.quiz.category}`
+      : view === "ricetta"
+        ? `ricetta/${ui.discovery.recipe}`
+        : view === "gruppo"
+          ? `gruppo/${ui.social.groupId}`
+          : view === "sessione"
+            ? `sessione/${ui.guided.sessionId}`
+            : view;
   if (chromeRoute !== routeKey) {
-    elements.desktopNav.innerHTML = `<ul class="menu w-full gap-1 px-0">${mainNav.map((x) => navLink(x)).join("")}<li class="menu-title mt-3 text-base-content/85">Il tuo benessere</li>${wellnessNav.map((x) => navLink(x)).join("")}<li class="menu-title mt-3 text-base-content/85">Insieme</li>${communityNav.map((x) => navLink(x)).join("")}</ul>`;
+    elements.desktopNav.innerHTML = `<ul class="menu w-full gap-1 px-0">${mainNav.map((x) => navLink(x)).join("")}${exploreMenu()}<li class="menu-title mt-3 text-base-content/85">Il tuo benessere</li>${wellnessNav.map((x) => navLink(x)).join("")}<li class="menu-title mt-3 text-base-content/85">Insieme</li>${communityNav.map((x) => navLink(x)).join("")}</ul>`;
     elements.mobileNav.innerHTML = dockNav
       .map((x) => navLink(x, true))
       .join("");
@@ -191,6 +229,7 @@ function rememberFocus() {
       id: active.dataset.id,
       index: active.dataset.index,
       duration: active.dataset.duration,
+      text: active.dataset.text,
     };
   return active?.id ? { elementId: active.id } : null;
 }
@@ -200,7 +239,7 @@ function restoreFocus(info) {
   if (info.elementId) target = document.getElementById(info.elementId);
   else {
     let selector = `[data-action="${CSS.escape(info.action)}"]`;
-    for (const key of ["id", "index", "duration"])
+    for (const key of ["id", "index", "duration", "text"])
       if (info[key] !== undefined)
         selector += `[data-${key}="${CSS.escape(info[key])}"]`;
     target = document.querySelector(selector);
@@ -268,6 +307,8 @@ function render(focus = false) {
     state: store.state,
     ui,
     timer: timer.snapshot(),
+    guidedTimer: guidedTimers.get(ui.guided.sessionId)?.snapshot(),
+    fridgeTimer: fridgeTimer.snapshot(),
     chatBusy: conversation.busy,
     recoveryRequired: store.recoveryRequired,
     breathing: breathingMotion.settings(),
@@ -296,6 +337,15 @@ async function navigate() {
     view = route.view;
     renderer = nextRenderer;
     if (view === "quiz") openQuiz(ui, route.category);
+    if (view === "ricetta") ui.discovery.recipe = recipeById(route.detail).id;
+    if (view === "gruppo")
+      ui.social.groupId =
+        groups.find((group) => group.id === route.detail)?.id || groups[0].id;
+    if (view === "sessione") ui.guided.sessionId = safeSession(route.detail).id;
+    if (view === "impara")
+      ui.learning.category = Object.hasOwn(quizSets, route.detail)
+        ? route.detail
+        : "all";
     render(true);
   } catch {
     if (request !== navigationVersion) return;
@@ -335,6 +385,42 @@ function openEntry(type, id = "") {
     entry,
   );
   elements.dialog.showModal();
+}
+function openMeal(label, notes = "") {
+  openEntry("meal");
+  const form = $("#entry-form");
+  if (!form) return;
+  form.elements.label.value = label;
+  form.elements.notes.value = notes;
+  form.elements.label.focus();
+}
+
+function togglePreference(collection, id) {
+  const selected = store.state[collection];
+  store.state[collection] = selected.includes(id)
+    ? selected.filter((item) => item !== id)
+    : [...selected, id];
+}
+function updatePantry(id) {
+  if (!catalogFoods().some((food) => food.id === id)) return false;
+  togglePreference(
+    foods.some((food) => food.id === id) ? "fridge" : "pantryExtras",
+    id,
+  );
+  return true;
+}
+function captureGlucoseDraft() {
+  const form = $("#glucose-form");
+  if (form) {
+    ui.glucose.draft = Object.fromEntries(new FormData(form));
+    ui.glucose.detailsOpen = !!$("#glucose-details")?.open;
+  }
+}
+function showGlucoseError(message) {
+  const error = $("#glucose-error");
+  if (!error) return;
+  error.hidden = false;
+  error.textContent = message;
 }
 
 function deleteWithUndo(collection, id, message) {
@@ -443,6 +529,83 @@ const breathingMotion = createBreathingMotion({
       ? (callback) => new IntersectionObserver(callback, { threshold: 0.15 })
       : null,
 });
+const guidedTimers = new Map(
+  meditations.map((session) => {
+    const duration = session.minutes * 60;
+    const guidedTimer = createTimer({
+      durations: [duration],
+      initialDuration: duration,
+      onTick(snapshot) {
+        if (view !== "sessione" || ui.guided.sessionId !== session.id) return;
+        const time = $("#guided-time");
+        if (time) time.textContent = formatTime(snapshot.remaining);
+        const progress = $("#guided-progress");
+        if (progress) progress.value = snapshot.duration - snapshot.remaining;
+      },
+      onComplete(snapshot) {
+        if (!allowWrite()) return;
+        addEntry(store.state, {
+          type: "mindful",
+          label: session.title,
+          minutes: snapshot.duration / 60,
+        });
+        persist();
+        if (
+          [
+            "sessione",
+            "stress",
+            "percorso",
+            "diario",
+            "giardino",
+            "progressi",
+            "evoluzione",
+            "ricompense",
+            "sfide",
+            "dettaglio-attivita",
+            "diario-attivita",
+          ].includes(view)
+        )
+          render();
+        toast(`${session.title} completata e salvata nel diario.`);
+      },
+    });
+    return [session.id, guidedTimer];
+  }),
+);
+const fridgeTimer = createTimer({
+  durations: [30],
+  initialDuration: 30,
+  onTick(snapshot) {
+    if (view !== "frigo-sano") return;
+    const time = $("#fridge-game-time");
+    if (time) time.textContent = formatTime(snapshot.remaining);
+  },
+  onComplete() {
+    const game = ui.discovery.fridgeGame;
+    if (!game.started || game.finished) return;
+    game.finished = true;
+    game.message = "Il tempo è finito. Puoi riprovare quando vuoi.";
+    if (view === "frigo-sano") {
+      render();
+      focusStep("#fridge-question");
+    }
+  },
+});
+function pauseHealthTimers(except = null) {
+  for (const current of [timer, ...guidedTimers.values()])
+    if (current !== except && current.snapshot().running) current.toggle();
+}
+function pauseAllTimers() {
+  pauseHealthTimers();
+  if (fridgeTimer.snapshot().running) fridgeTimer.toggle();
+}
+function resetAllTimers() {
+  timer.reset(60);
+  for (const session of meditations)
+    guidedTimers.get(session.id).reset(session.minutes * 60);
+  fridgeTimer.reset(30);
+  ui.discovery.fridgeGame = initialFridgeGame();
+}
 const conversation = createConversation({
   store,
   onError() {
@@ -563,11 +726,76 @@ const actions = {
   },
   "fridge-toggle": (el) => {
     const id = el.dataset.id;
+    if (!foods.some((food) => food.id === id)) return;
     store.state.fridge = store.state.fridge.includes(id)
       ? store.state.fridge.filter((x) => x !== id)
       : [...store.state.fridge, id];
     persist();
     render();
+  },
+  "recipe-favorite": (el) => {
+    if (!recipes.some((recipe) => recipe.id === el.dataset.id)) return;
+    togglePreference("recipeFavorites", el.dataset.id);
+    persist();
+    render();
+  },
+  "recipe-save": (el) => {
+    const recipe = recipes.find((item) => item.id === el.dataset.id);
+    if (!recipe) return;
+    openMeal(
+      recipe.name,
+      "Idea dalla ricetta del prototipo, adattata al mio pasto.",
+    );
+  },
+  "recipe-pantry": (el) => {
+    const recipe = recipes.find((item) => item.id === el.dataset.id);
+    if (!recipe) return;
+    for (const id of recipe.pantry) {
+      const collection = foods.some((food) => food.id === id)
+        ? "fridge"
+        : "pantryExtras";
+      if (
+        catalogFoods().some((food) => food.id === id) &&
+        !store.state[collection].includes(id)
+      )
+        store.state[collection].push(id);
+    }
+    persist();
+    render();
+    toast("Ingredienti aggiunti alla dispensa locale.");
+  },
+  "recipe-clear-filter": () => {
+    ui.discovery.recipeQuery = "";
+    ui.discovery.recipeFilter = "all";
+    render();
+    focusStep("#recipe-search");
+  },
+  "food-add": (el) => {
+    const food = catalogFoods().find((item) => item.id === el.dataset.id);
+    if (food) openMeal(food.name);
+  },
+  "market-toggle": (el) => {
+    if (!updatePantry(el.dataset.id)) return;
+    persist();
+    render();
+  },
+  "food-clear-filter": () => {
+    ui.discovery.query = "";
+    ui.discovery.category = "all";
+    render();
+    focusStep("#food-query");
+  },
+  "food-clear-recent": () => {
+    store.state.foodSearches = [];
+    persist();
+    render();
+    focusStep("#food-query");
+  },
+  "food-recent": (el) => {
+    if (typeof el.dataset.text !== "string") return;
+    ui.discovery.query = el.dataset.text.trim().slice(0, 80);
+    render();
+    focusStep("#food-query");
   },
   "pantry-plate": () => {
     const suggestion = pantryPlate(store.state.fridge);
@@ -599,6 +827,7 @@ const actions = {
     render();
   },
   "timer-toggle": () => {
+    if (!timer.snapshot().running) pauseHealthTimers(timer);
     timer.toggle();
     render();
   },
@@ -606,14 +835,172 @@ const actions = {
     timer.reset();
     render();
   },
+  "guided-toggle": (el) => {
+    const selected = guidedTimers.get(el.dataset.id);
+    if (!selected) return;
+    if (!selected.snapshot().running) pauseHealthTimers(selected);
+    selected.toggle();
+    render();
+  },
+  "guided-reset": (el) => {
+    const session = meditations.find((item) => item.id === el.dataset.id);
+    if (!session) return;
+    guidedTimers.get(session.id).reset(session.minutes * 60);
+    render();
+  },
+  "fridge-game-start": () => {
+    ui.discovery.fridgeGame = initialFridgeGame();
+    ui.discovery.fridgeGame.started = true;
+    fridgeTimer.reset(30);
+    fridgeTimer.toggle();
+    render();
+    focusStep("#fridge-question");
+  },
+  "fridge-game-answer": (el) => {
+    if (!answerFridgeGame(ui.discovery.fridgeGame, el.dataset.id)) return;
+    if (ui.discovery.fridgeGame.finished) fridgeTimer.reset(30);
+    render();
+    focusStep("#fridge-question");
+  },
+  "fridge-game-stop": () => {
+    if (!ui.discovery.fridgeGame.started || ui.discovery.fridgeGame.finished)
+      return;
+    ui.discovery.fridgeGame.finished = true;
+    ui.discovery.fridgeGame.message =
+      "Hai interrotto il gioco. Puoi riprovare quando vuoi.";
+    fridgeTimer.reset(30);
+    render();
+    focusStep("#fridge-question");
+  },
+  "wake-toggle": (el) => {
+    const id = el.dataset.id;
+    if (!exercises.some((exercise) => exercise.id === id)) return;
+    ui.guided.exerciseIds = ui.guided.exerciseIds.includes(id)
+      ? ui.guided.exerciseIds.filter((item) => item !== id)
+      : [...ui.guided.exerciseIds, id];
+    render();
+  },
+  "wake-save": () => {
+    const selected = validExerciseIds(ui.guided.exerciseIds);
+    const field = $("#wake-minutes");
+    const minutes = validExerciseMinutes(field?.value);
+    if (!selected.length) return;
+    if (minutes === null) {
+      field?.setCustomValidity(
+        "Inserisci i minuti effettivi, da 1 a 180, senza decimali.",
+      );
+      field?.reportValidity();
+      return;
+    }
+    addEntry(store.state, {
+      type: "movement",
+      label: `Risveglio muscolare: ${exerciseLabel(selected)}`,
+      minutes,
+    });
+    persist();
+    ui.guided.exerciseIds = [];
+    ui.guided.exerciseMinutes = minutes;
+    render();
+    focusStep("#wake-minutes");
+    toast("Routine registrata nel diario con i minuti che hai indicato.");
+  },
+  "routine-toggle": (el) => {
+    if (!sleepRoutine.some((item) => item.id === el.dataset.id)) return;
+    store.state.sleepRoutine = validRoutineIds(store.state.sleepRoutine);
+    togglePreference("sleepRoutine", el.dataset.id);
+    persist();
+    render();
+  },
+  "sleep-reminder": () => {
+    const field = $("#sleep-reminder-time");
+    const time = field?.value;
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time || "")) {
+      field?.setCustomValidity("Scegli un orario per il promemoria.");
+      field?.reportValidity();
+      return;
+    }
+    store.state.sleepReminder = {
+      enabled: !store.state.sleepReminder.enabled,
+      time,
+    };
+    store.state.notificationsRead = false;
+    store.state.notificationsReadDate = "";
+    persist();
+    render();
+    toast("Preferenza del promemoria serale aggiornata.");
+  },
+  "mindfulness-filter": (el) => {
+    const category = el.dataset.id;
+    if (
+      !["tutte", ...meditations.map((session) => session.category)].includes(
+        category,
+      )
+    )
+      return;
+    ui.guided.category = category;
+    render();
+  },
   "join-group": (el) => {
     const id = el.dataset.id;
+    if (!groups.some((group) => group.id === id)) return;
     store.state.joined = store.state.joined.includes(id)
       ? store.state.joined.filter((x) => x !== id)
       : [...store.state.joined, id];
     persist();
     render();
     toast("Preferenza aggiornata nella community dimostrativa.");
+  },
+  "group-clear-filter": () => {
+    ui.social.query = "";
+    ui.social.category = "all";
+    render();
+    focusStep("#group-search");
+  },
+  "challenge-join": (el) => {
+    if (!challenges.some((challenge) => challenge.id === el.dataset.id)) return;
+    togglePreference("joinedChallenges", el.dataset.id);
+    persist();
+    render();
+    toast("Preferenza aggiornata nelle tue sfide locali.");
+  },
+  "glucose-edit": (el) => {
+    const reading = store.state.glucoseReadings.find(
+      (item) => item.id === el.dataset.id,
+    );
+    if (!reading) return;
+    ui.glucose.editing = reading.id;
+    ui.glucose.draft = { ...reading };
+    render();
+    focusStep("#glucose-value");
+  },
+  "glucose-cancel": () => {
+    ui.glucose.editing = "";
+    delete ui.glucose.draft;
+    render();
+    focusStep("#glucose-value");
+  },
+  "glucose-delete": (el) => {
+    if (ui.glucose.editing === el.dataset.id) {
+      ui.glucose.editing = "";
+      delete ui.glucose.draft;
+    }
+    deleteWithUndo(
+      "glucoseReadings",
+      el.dataset.id,
+      "Misurazione rimossa dal registro.",
+    );
+  },
+  "glucose-export": () => {
+    const report = glucoseReport(
+      store.state.glucoseReadings,
+      ui.glucose.period,
+    );
+    if (!report.count) return;
+    exportFile(
+      `prevedi-glucosio-${report.from}-${report.to}.csv`,
+      glucoseCSV(report.records),
+      "text/csv;charset=utf-8",
+    );
   },
   "water-tree": (el) => {
     const key = localDate() + ":" + el.dataset.id;
@@ -733,7 +1120,7 @@ const actions = {
       return;
     }
     conversation.cancelPending();
-    timer.reset(60);
+    resetAllTimers();
     Object.assign(ui, initialSession());
     if (view === "quiz") openQuiz(ui, resolveRoute(location.hash).category);
     render(true);
@@ -759,7 +1146,7 @@ const actions = {
       return;
     }
     conversation.cancelPending();
-    timer.reset(60);
+    resetAllTimers();
     Object.assign(ui, initialSession());
     elements.dialog.close();
     storageBanner();
@@ -780,7 +1167,7 @@ const actions = {
       return;
     }
     conversation.cancelPending();
-    timer.reset(60);
+    resetAllTimers();
     Object.assign(ui, initialSession());
     elements.dialog.close();
     location.hash = "profilo";
@@ -805,10 +1192,23 @@ const writeActions = new Set([
   "water-minus",
   "plate-save",
   "fridge-toggle",
+  "recipe-favorite",
+  "recipe-save",
+  "recipe-pantry",
+  "food-add",
+  "market-toggle",
+  "food-clear-recent",
   "claim",
   "decorate",
   "timer-toggle",
+  "guided-toggle",
+  "wake-save",
+  "routine-toggle",
+  "sleep-reminder",
   "join-group",
+  "challenge-join",
+  "glucose-edit",
+  "glucose-delete",
   "water-tree",
   "like-post",
   "edit-post",
@@ -847,7 +1247,10 @@ document.addEventListener("click", (event) => {
     const writes =
       writeActions.has(control.dataset.action) ||
       (control.dataset.action === "quiz-next" && ui.quiz.index === 2);
-    if (writes && !allowWrite()) return;
+    if (writes && !allowWrite()) {
+      event.preventDefault();
+      return;
+    }
     actions[control.dataset.action](control);
   }
 });
@@ -877,6 +1280,62 @@ document.addEventListener("change", (event) => {
     ui.progress.period = Number(event.target.value) === 30 ? 30 : 7;
     render();
   }
+  if (event.target.id === "food-category") {
+    ui.discovery.category = Object.hasOwn(foodCategories, event.target.value)
+      ? event.target.value
+      : "all";
+    render();
+  }
+  if (event.target.id === "recipe-filter") {
+    ui.discovery.recipeFilter = [
+      "all",
+      "Vegetale",
+      "Pesce",
+      "Preferite",
+    ].includes(event.target.value)
+      ? event.target.value
+      : "all";
+    render();
+  }
+  if (event.target.id === "group-category") {
+    ui.social.category = Object.hasOwn(groupCategories, event.target.value)
+      ? event.target.value
+      : "all";
+    render();
+  }
+  if (event.target.id === "reward-theme") {
+    ui.forest.theme = ["all", "nature", "winter"].includes(event.target.value)
+      ? event.target.value
+      : "all";
+    render();
+  }
+  if (event.target.id === "glucose-period") {
+    captureGlucoseDraft();
+    ui.glucose.period = Number(event.target.value) === 30 ? 30 : 7;
+    render();
+  }
+  if (event.target.id === "sleep-reminder-time") {
+    const field = event.target;
+    field.setCustomValidity("");
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(field.value)) {
+      field.setCustomValidity("Scegli un orario per il promemoria.");
+      field.reportValidity();
+      return;
+    }
+    if (!allowWrite()) {
+      event.preventDefault();
+      field.value = store.state.sleepReminder.time;
+      return;
+    }
+    store.state.sleepReminder = {
+      ...store.state.sleepReminder,
+      time: field.value,
+    };
+    store.state.notificationsRead = false;
+    store.state.notificationsReadDate = "";
+    persist();
+    render();
+  }
   if (event.target.id === "plate-meal") ui.plate.meal = event.target.value;
   if (event.target.id === "backup-file" && event.target.files[0])
     previewBackup(event.target.files[0], event.target);
@@ -884,12 +1343,121 @@ document.addEventListener("change", (event) => {
 
 document.addEventListener("submit", (e) => {
   if (
-    ["entry-form", "community-form", "profile-form", "chat-form"].includes(
-      e.target.id,
-    ) &&
+    [
+      "entry-form",
+      "community-form",
+      "profile-form",
+      "chat-form",
+      "glucose-form",
+    ].includes(e.target.id) &&
     !allowWrite()
   ) {
     e.preventDefault();
+    if (e.target.id === "glucose-form") {
+      captureGlucoseDraft();
+      showGlucoseError(
+        "Le modifiche sono sospese perché il salvataggio è protetto. La bozza resta disponibile: scegli come recuperare il percorso.",
+      );
+    }
+    return;
+  }
+  if (e.target.id === "food-search-form") {
+    e.preventDefault();
+    const query = String(new FormData(e.target).get("query") || "")
+      .trim()
+      .slice(0, 80);
+    ui.discovery.query = query;
+    store.prepareWrite();
+    if (query && !store.recoveryRequired) {
+      store.state.foodSearches = [
+        query,
+        ...store.state.foodSearches.filter((item) => item !== query),
+      ].slice(0, 8);
+      persist();
+    }
+    render();
+    focusStep("#food-query");
+    return;
+  }
+  if (e.target.id === "recipe-search-form") {
+    e.preventDefault();
+    ui.discovery.recipeQuery = String(new FormData(e.target).get("query") || "")
+      .trim()
+      .slice(0, 80);
+    render();
+    focusStep("#recipe-search");
+    return;
+  }
+  if (e.target.id === "groups-search-form") {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    ui.social.query = String(data.get("query") || "")
+      .trim()
+      .slice(0, 80);
+    ui.social.category = Object.hasOwn(groupCategories, data.get("category"))
+      ? data.get("category")
+      : "all";
+    render();
+    focusStep("#group-search");
+    return;
+  }
+  if (e.target.id === "garden-friends-form") {
+    e.preventDefault();
+    ui.social.friendsQuery = String(new FormData(e.target).get("query") || "")
+      .trim()
+      .slice(0, 80);
+    render();
+    focusStep("#garden-friends-query");
+    return;
+  }
+  if (e.target.id === "glucose-form") {
+    e.preventDefault();
+    captureGlucoseDraft();
+    try {
+      const reading = validateReading(
+        Object.fromEntries(new FormData(e.target)),
+        localDate(),
+      );
+      const readings = store.state.glucoseReadings;
+      if (ui.glucose.editing) {
+        const index = readings.findIndex(
+          (item) => item.id === ui.glucose.editing,
+        );
+        if (index < 0)
+          throw new Error(
+            "La misurazione da modificare non è più presente. Annulla la modifica e riprova.",
+          );
+        readings[index] = {
+          ...reading,
+          id: readings[index].id,
+          createdAt: readings[index].createdAt,
+        };
+      } else {
+        if (readings.length >= GLUCOSE_LIMIT)
+          throw new Error(
+            "Hai raggiunto il limite di 200 misurazioni. Esporta una copia e rimuovi una voce prima di aggiungerne altre.",
+          );
+        readings.push({
+          ...reading,
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+        });
+      }
+      const editing = !!ui.glucose.editing;
+      store.state.glucoseReadings = normalizedReadings(readings, localDate());
+      persist();
+      ui.glucose.editing = "";
+      delete ui.glucose.draft;
+      render();
+      focusStep("#glucose-value");
+      toast(
+        editing
+          ? "Misurazione aggiornata nel registro."
+          : "Misurazione salvata nel registro.",
+      );
+    } catch (error) {
+      showGlucoseError(error.message);
+    }
     return;
   }
   if (e.target.id === "entry-form") {
@@ -1027,6 +1595,28 @@ document.addEventListener("input", (event) => {
       `${event.target.value.length}/400 caratteri`;
     $("#community-error").textContent = "";
   }
+  if (event.target.id === "food-query")
+    ui.discovery.query = event.target.value.slice(0, 80);
+  if (event.target.id === "recipe-search")
+    ui.discovery.recipeQuery = event.target.value.slice(0, 80);
+  if (event.target.id === "group-search")
+    ui.social.query = event.target.value.slice(0, 80);
+  if (event.target.id === "garden-friends-query")
+    ui.social.friendsQuery = event.target.value.slice(0, 80);
+  if (event.target.id === "wake-minutes") {
+    event.target.setCustomValidity("");
+    ui.guided.exerciseMinutes = event.target.value;
+  }
+  if (event.target.id === "sleep-reminder-time")
+    event.target.setCustomValidity("");
+  if (event.target.closest("#glucose-form")) {
+    captureGlucoseDraft();
+    const error = $("#glucose-error");
+    if (error) {
+      error.hidden = true;
+      error.textContent = "";
+    }
+  }
 });
 elements.dialog.addEventListener("close", () => {
   pendingBackup = null;
@@ -1037,12 +1627,13 @@ window.addEventListener("storage", (event) => {
   if (event.key !== KEY && event.key !== null) return;
   if (store.sync(event.newValue)) {
     conversation.cancelPending();
+    resetAllTimers();
     elements.dialog.close();
     render();
     toast("Percorso aggiornato dall’altra scheda.");
   } else {
     conversation.cancelPending();
-    if (timer.snapshot().running) timer.toggle();
+    pauseAllTimers();
     render();
     storageBanner();
   }

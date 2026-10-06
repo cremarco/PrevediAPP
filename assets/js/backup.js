@@ -1,4 +1,5 @@
 import { initialState, parseState, availablePoints } from "../data.js";
+import { validateReading, GLUCOSE_LIMIT } from "./glucose.js";
 import { validateEntry, validDate } from "./records.js";
 
 export const MAX_BACKUP_BYTES = 2 * 1024 * 1024;
@@ -51,6 +52,28 @@ export function readBackup(text) {
     )
       throw new Error("La copia contiene progressi non validi o duplicati.");
     awards.add(key);
+  }
+  if (Object.hasOwn(value, "glucoseReadings")) {
+    if (
+      !Array.isArray(value.glucoseReadings) ||
+      value.glucoseReadings.length > GLUCOSE_LIMIT
+    )
+      throw new Error(
+        "La copia contiene misurazioni non valide o supera il limite di 200.",
+      );
+    const readingIds = new Set();
+    for (const reading of value.glucoseReadings) {
+      if (
+        !reading ||
+        typeof reading.id !== "string" ||
+        readingIds.has(reading.id)
+      )
+        throw new Error(
+          "La copia contiene misurazioni duplicate o senza identità.",
+        );
+      readingIds.add(reading.id);
+      validateReading(reading);
+    }
   }
   const known = Object.fromEntries(
     Object.keys(initialState())

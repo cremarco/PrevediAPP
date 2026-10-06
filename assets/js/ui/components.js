@@ -77,6 +77,8 @@ export function alberello(state, cls = "h-64 w-64 sm:h-72 sm:w-72") {
   const reward = rewards.find(
     (item) => item.id === state.decoration && state.claimed.includes(item.id),
   );
+  if (reward?.preview)
+    return `<div class="flex flex-col items-center gap-3"><img class="${cls} object-contain" src="assets/images/alberello-original.png" alt="Alberello, il tuo compagno di percorso" width="422" height="422"><div class="avatar"><div class="w-20 rounded-box bg-base-100"><img src="${esc(reward.image)}" alt="${esc(reward.name)}, ricompensa scelta nel giardino" width="512" height="512" class="object-contain" loading="lazy"></div></div><span class="text-sm">${esc(reward.name)} · nel tuo giardino</span></div>`;
   return `<img class="${cls} object-contain" src="assets/images/${reward ? `garden-${reward.id}.webp` : "alberello-original.png"}" alt="${reward ? `Alberello · ${reward.name}` : "Alberello, un abete sorridente che ti saluta"}" width="${reward ? 640 : 422}" height="${reward ? 640 : 422}">`;
 }
 

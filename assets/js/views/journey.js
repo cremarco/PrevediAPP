@@ -42,7 +42,7 @@ export function dashboard({ state }) {
    .join("")}</ul>`;
   const treeBody = `<p class="text-sm text-base-content/85">Ogni buona abitudine mette una nuova radice.</p><figure>${alberello(state, "mx-auto h-52 w-52 xl:h-60 xl:w-60")}</figure><div class="flex flex-col items-center gap-3"><span class="badge badge-soft badge-primary text-base-content">${icon("arrow-trending-up", "size-4")}Livello ${level} · ${level === 1 ? "Un nuovo inizio" : "Radici più forti"}</span><div class="w-full"><div class="mb-2 flex justify-between gap-2 text-xs text-base-content/85"><span>Verso il livello ${level + 1}</span><span>${points % 100}/100 foglie</span></div><progress class="progress progress-primary w-full" value="${points % 100}" max="100" aria-label="Crescita di Alberello"></progress></div></div>`;
   return `${heading(state.name ? `Ciao ${esc(state.name)}, cresciamo insieme.` : "Ogni piccolo passo conta.", "Prenditi cura di te. Il tuo Alberello crescerà con te.", pointsPill(state))}
- ${!state.onboarded ? `<div class="alert alert-soft alert-info mb-6 grid-cols-[auto_1fr] grid-flow-row items-start gap-x-3 gap-y-1 sm:alert-horizontal sm:grid-flow-col" role="status">${icon("information-circle")}<span>Il tuo percorso, dal tuo nome.</span><a href="#profilo" class="btn btn-ghost btn-sm col-start-2 min-h-11 justify-self-start sm:col-start-auto">Personalizza ${icon("arrow-right")}</a></div>` : ""}
+ ${!state.onboarded ? `<div class="alert alert-soft alert-info mb-6 grid-cols-[auto_1fr] grid-flow-row items-start gap-x-3 gap-y-1 sm:alert-horizontal sm:grid-flow-col" role="status">${icon("information-circle")}<span>Il tuo percorso, dal tuo nome.</span><a href="#inizio" class="btn btn-ghost btn-sm col-start-2 min-h-11 justify-self-start sm:col-start-auto">Iniziamo insieme ${icon("arrow-right")}</a></div>` : ""}
  <div class="grid items-stretch gap-6 @4xl:grid-cols-[1.65fr_1fr]">${card("", missionBody, "", "bg-base-100", 'aria-labelledby="daily-title"')}${card("Il tuo Alberello", treeBody, link("giardino", "Visita il tuo giardino"), "bg-primary/15 text-center")}</div>
  <div class="mt-8 mb-4 flex flex-wrap items-center justify-between gap-3"><h2>Coltiva il tuo equilibrio</h2>${link("diario", "Il mio diario")}</div>
  <div class="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 @4xl:grid-cols-4">${[
@@ -79,11 +79,12 @@ export function garden({ state }) {
         .filter((reward) => state.claimed.includes(reward.id))
         .map(
           (reward) =>
-            `<button class="btn btn-sm btn-outline min-h-11 ${state.decoration === reward.id ? "btn-primary btn-active" : ""}" data-action="decorate" data-id="${reward.id}" aria-pressed="${state.decoration === reward.id}">${icon(reward.icon)}${{ nest: "Nido", mushrooms: "Sottobosco", stars: "Stelle" }[reward.id]}</button>`,
+            `<button class="btn btn-sm btn-outline h-auto min-h-11 max-w-full whitespace-normal py-2 ${state.decoration === reward.id ? "btn-primary btn-active" : ""}" data-action="decorate" data-id="${reward.id}" aria-pressed="${state.decoration === reward.id}">${icon(reward.icon)}<span class="min-w-0">${{ nest: "Nido", mushrooms: "Sottobosco", stars: "Stelle" }[reward.id] || reward.name}</span></button>`,
         )
         .join("")}</div></fieldset>`
     : link("percorso", "Coltiva il primo passo");
   const rewardBody = `<p class="text-sm text-base-content/85">Raccogli foglie con il diario e i quiz. Le ricompense cambiano l’illustrazione del tuo giardino.</p><ul class="list">${rewards
+    .filter((reward) => !reward.preview)
     .map((reward) => {
       const owned = state.claimed.includes(reward.id),
         active = state.decoration === reward.id,
@@ -101,7 +102,7 @@ export function garden({ state }) {
     .join(
       "",
     )}</ul><p class="text-xs text-base-content/85">Le tappe raccontano le attività registrate. Non misurano la salute e non assegnano foglie aggiuntive.</p>`;
-  return `${heading("Le buone abitudini mettono radici.", "Un giardino che racconta il tuo percorso.", pointsPill(state))}<div class="grid items-start gap-6 @4xl:grid-cols-2">${card("Il tuo Alberello", tree, decorations, "bg-primary/15")}${card("Le tue ricompense", rewardBody, link("percorso", "Continua a coltivare"))}</div><div class="mt-6">${card("Le tappe del tuo percorso", stages, link("progressi", "Guarda i tuoi progressi"))}</div>`;
+  return `${heading("Le buone abitudini mettono radici.", "Un giardino che racconta il tuo percorso.", pointsPill(state))}<div class="grid items-start gap-6 @4xl:grid-cols-2">${card("Il tuo Alberello", tree, decorations, "bg-primary/15")}${card("Le tue ricompense", rewardBody, link("ricompense", "Esplora tutte le collezioni"))}</div><div class="mt-6">${card("Le tappe del tuo percorso", stages, link("evoluzione", "Il percorso di crescita"))}</div>`;
 }
 
 const dateLabel = new Intl.DateTimeFormat("it-IT", {
@@ -187,7 +188,7 @@ export function progress({ state, ui }) {
     .join(
       "",
     )}</ul><p class="text-xs text-base-content/85">Lo storico conserva gli ultimi 200 tentativi complessivi. I risultati si riferiscono ai tentativi ancora presenti; le foglie già raccolte restano nel percorso.</p>`;
-  return `${heading("Guarda quanta strada hai fatto.", "I tuoi progressi, a partire dai gesti che hai registrato.")}<div class="grid items-start gap-6 @4xl:grid-cols-[1.5fr_1fr]">${card(`Il tuo ${report.type === "sleep" ? "riposo" : report.type === "water" ? "diario dell’acqua" : report.type === "mindful" ? "tempo per te" : "movimento"}`, chart, link("diario", "Apri il diario"))}${card("Il percorso di Alberello", tree, link("giardino", "Apri il tuo giardino"))}</div><div class="mt-6">${card("Le tue scoperte", learning)}</div><div class="mt-8 mb-4 flex flex-wrap items-center justify-between gap-3"><h2>Le tue abitudini, in tutto il percorso</h2>${link("diario", "Apri il diario")}</div><div class="grid grid-cols-2 gap-4 @4xl:grid-cols-4">${[
+  return `${heading("Guarda quanta strada hai fatto.", "I tuoi progressi, a partire dai gesti che hai registrato.")}<div class="grid items-start gap-6 @4xl:grid-cols-[1.5fr_1fr]">${card(`Il tuo ${report.type === "sleep" ? "riposo" : report.type === "water" ? "diario dell’acqua" : report.type === "mindful" ? "tempo per te" : "movimento"}`, chart, link("diario", "Apri il diario"))}${card("Il percorso di Alberello", tree, link("evoluzione", "Dettaglio della crescita"))}</div><div class="mt-6">${card("Le tue scoperte", learning)}</div><div class="mt-8 mb-4 flex flex-wrap items-center justify-between gap-3"><h2>Le tue abitudini, in tutto il percorso</h2>${link("diario", "Apri il diario")}</div><div class="grid grid-cols-2 gap-4 @4xl:grid-cols-4">${[
     ["meal", "chart-pie", "Pasti registrati"],
     ["movement", "bolt", "Attività registrate"],
     ["sleep", "moon", "Registrazioni di sonno"],

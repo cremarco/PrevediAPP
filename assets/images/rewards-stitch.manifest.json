@@ -1,0 +1,56 @@
+[
+  {
+    "id": "fox",
+    "file": "assets/images/reward-fox.webp",
+    "source": "stitch_percorso_benessere_prediabete/a_3d_winter_themed_animal_for_a_health_app_a_cute_white_arctic_fox_with_big/screen.png",
+    "origin": "User-provided Stitch project4965067135037654911, Download Project 2026-10-06. Mechanical512px WebP derivative; artwork unchanged.",
+    "width": 512,
+    "height": 512,
+    "bytes": 40938
+  },
+  {
+    "id": "ice",
+    "file": "assets/images/reward-ice.webp",
+    "source": "stitch_percorso_benessere_prediabete/a_3d_winter_themed_decoration_for_a_health_app_mascot_tree_a_set_of_sparkling/screen.png",
+    "origin": "User-provided Stitch project4965067135037654911, Download Project 2026-10-06. Mechanical512px WebP derivative; artwork unchanged.",
+    "width": 512,
+    "height": 512,
+    "bytes": 57312
+  },
+  {
+    "id": "scarf",
+    "file": "assets/images/reward-scarf.webp",
+    "source": "stitch_percorso_benessere_prediabete/a_3d_winter_themed_item_for_a_health_app_mascot_tree_a_cozy_red_and_white/screen.png",
+    "origin": "User-provided Stitch project4965067135037654911, Download Project 2026-10-06. Mechanical512px WebP derivative; artwork unchanged.",
+    "width": 512,
+    "height": 512,
+    "bytes": 45142
+  },
+  {
+    "id": "snow",
+    "file": "assets/images/reward-snow.webp",
+    "source": "stitch_percorso_benessere_prediabete/a_3d_winter_themed_decoration_for_a_health_app_mascot_tree_a_small_pile_of_soft/screen.png",
+    "origin": "User-provided Stitch project4965067135037654911, Download Project 2026-10-06. Mechanical512px WebP derivative; artwork unchanged.",
+    "width": 512,
+    "height": 512,
+    "bytes": 35958
+  },
+  {
+    "id": "birdhouse",
+    "file": "assets/images/reward-birdhouse-v1.webp",
+    "source": "artwork/rewards-v1/birdhouse.png",
+    "origin": "OpenAI built-in imagegen, original new illustration 2026-10-06. Full exact prompt embedded in master PNG; transparent-alpha512pxWebP derivative.",
+    "width": 512,
+    "height": 512,
+    "bytes": 102930
+  },
+  {
+    "id": "pinecones",
+    "file": "assets/images/reward-pinecones-v1.webp",
+    "source": "artwork/rewards-v1/pinecones.png",
+    "origin": "OpenAI built-in imagegen, original new illustration 2026-10-06. Full exact prompt embedded in master PNG; transparent-alpha512pxWebP derivative.",
+    "width": 512,
+    "height": 512,
+    "bytes": 108008
+  }
+]

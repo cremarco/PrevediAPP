@@ -33,7 +33,8 @@ export function entryDialog(type, date, entry = null) {
 export function backupDialog(state, filename) {
   return `${dialogHeading("Ripristinare questa copia?")}<p class="mb-4 break-words text-sm">${esc(filename)} · Profilo: <strong>${esc(state.name || "Senza nome")}</strong></p>${stats(
     [
-      [state.entries.length, "registrazioni"],
+      [state.entries.length, "attività nel diario"],
+      [state.glucoseReadings?.length || 0, "misurazioni manuali"],
       [totalPoints(state), "foglie raccolte"],
       [availablePoints(state), "foglie disponibili"],
     ],

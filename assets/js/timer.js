@@ -3,13 +3,17 @@ export const formatTime = (seconds) =>
 
 /** No polling while idle; the clock, rather than tick count, determines elapsed time. */
 export function createTimer({
+  durations = [60, 180, 300],
+  initialDuration = durations[0],
   now = Date.now,
   schedule = setTimeout,
   cancel = clearTimeout,
   onTick = () => {},
   onComplete = () => {},
 } = {}) {
-  let duration = 60;
+  let duration = durations.includes(initialDuration)
+    ? initialDuration
+    : durations[0];
   let remaining = duration;
   let remainingMs = duration * 1000;
   let running = false;
@@ -61,7 +65,7 @@ export function createTimer({
   return {
     snapshot,
     setDuration(seconds) {
-      if (started || ![60, 180, 300].includes(seconds)) return;
+      if (started || !durations.includes(seconds)) return;
       duration = seconds;
       remaining = seconds;
       remainingMs = seconds * 1000;

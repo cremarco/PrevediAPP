@@ -2,7 +2,7 @@
 
 [Sito su GitHub Pages](https://cremarco.github.io/PrevediAPP/) · [Repository](https://github.com/cremarco/PrevediAPP)
 
-App statica interattiva ricostruita da [Percorso Benessere Prediabete su Stitch](https://stitch.withgoogle.com/projects/4965067135037654911). Mantiene il tema Terra, le mascotte e i flussi principali del prototipo. HTML, JavaScript a moduli, Tailwind CSS 4, daisyUI 5 e Heroicons outline. Font, immagini, icone e CSS sono locali; non servono chiavi API.
+App statica interattiva ricostruita da [Percorso Benessere Prediabete su Stitch](https://stitch.withgoogle.com/projects/4965067135037654911). Mantiene il tema Terra e le mascotte; le pagine della fonte sono collegate in un unico percorso locale. HTML, JavaScript a moduli, Tailwind CSS 4, daisyUI 5 e Heroicons outline. Font, immagini, icone e CSS sono locali; non servono chiavi API.
 
 L’interfaccia usa componenti daisyUI reali, con parti e stati ufficiali, personalizzati attraverso il tema Terra. I precedenti componenti costruiti con CSS proprio sono stati sostituiti. La mappatura e la verifica sono in [DAISYUI-AUDIT.md](DAISYUI-AUDIT.md).
 
@@ -20,18 +20,24 @@ La guida alla respirazione mantiene l’animazione sincronizzata con il timer, c
 
 Il codice è organizzato in moduli per schermate, stato, navigazione, timer e conversazione. La build minifica il JavaScript e carica le aree su richiesta. Struttura, compatibilità dei salvataggi e misure sono in [MAINTENANCE.md](MAINTENANCE.md).
 
+La verifica dell’export completo di Stitch ha identificato 79 schermate HTML con anteprima, riunite in 37 famiglie funzionali. Tutte hanno una destinazione nell’app: varianti, domande e dialoghi condividono le stesse viste quando descrivono lo stesso flusso. Sono state aggiunte 24 route nominali, per 41 route e 55 varianti indirizzabili. La mappa completa e gli adattamenti sono in [STITCH-COVERAGE.md](STITCH-COVERAGE.md). Le sei nuove immagini delle ricompense, di cui due generate con Imagegen, sono documentate in [STITCH-ASSETS.md](STITCH-ASSETS.md).
+
 ## Cosa funziona
 
 - Percorso giornaliero e diario di pasti, movimento, sonno, acqua e pause: modifica delle voci, note, navigazione per giorno e rimozione annullabile.
-- Quattro quiz con storico dei risultati e ripresa indipendente per categoria durante la sessione; dispensa personale collegata alla composizione del piatto e alla registrazione del pasto.
-- Foglie, livelli, tre ricompense illustrate selezionabili e tappe basate sulle attività effettive; progressi per movimento, sonno, acqua e pause a 7 o 30 giorni.
-- Profilo e obiettivi, esportazione JSON/CSV, ripristino JSON con validazione e riepilogo, cancellazione confermata dei dati.
+- Iniziamo insieme, presentazione di Pigna, quattro quiz con storico e ripresa indipendente per categoria durante la sessione, hub e introduzioni agli argomenti.
+- Ricerca in un catalogo locale di 21 alimenti, ricerche recenti, mercato, dispensa personale, tre ricette con preferite e ingredienti collegati al diario. Due giochi: Crea il piatto e Frigo Sano.
+- Dettaglio e diario del movimento, risveglio muscolare registrabile, routine serale con promemoria nell’app, tre pause guidate scritte con timer da 10, 15 e 5 minuti.
+- Foglie, livelli, nove ricompense nelle collezioni Natura/Inverno ed evoluzione di Alberello basata sulle attività effettive; progressi per movimento, sonno, acqua e pause a 7 o 30 giorni.
+- Profilo e obiettivi, esportazione JSON/CSV, ripristino JSON con validazione e riepilogo, cancellazione confermata dei dati. Registro manuale del glucosio con modifica, rimozione annullabile, periodo 7/30 giorni e CSV dedicato.
 - Test educativo del rischio CDC con punteggio e collegamenti alle fonti.
-- Conversazione guidata con Pigna, notifiche giornaliere e community dimostrativa con messaggi personali locali modificabili.
+- Conversazione guidata con Pigna, notifiche giornaliere e community dimostrativa: quattro gruppi, sfide personali basate sul diario, giardino condiviso di esempio e messaggi personali locali modificabili.
 
 I dati restano in `localStorage` su questo browser e dominio. Non c’è sincronizzazione fra dispositivi. Se un salvataggio è illeggibile, l’app protegge il file originale e sospende le modifiche: puoi conservarlo, ripristinare un JSON verificato o scegliere esplicitamente un nuovo percorso. Un errore di accesso ai dati permette invece modifiche temporanee in memoria, da esportare prima di chiudere.
 
-La community contiene esempi e interazioni locali; Pigna usa risposte predefinite su quattro temi, senza un servizio AI. La chat conserva gli ultimi 40 messaggi, comprese le risposte; lo storico quiz gli ultimi 200 tentativi complessivi. Conteggi e migliori risultati dei quiz si riferiscono allo storico conservato. I tentativi incompleti e le risposte del test CDC restano in memoria: ricaricare o chiudere la pagina li interrompe. Il timer funziona finché la pagina rimane aperta; ricaricarla interrompe la pausa.
+La community contiene esempi e interazioni locali; Pigna usa risposte predefinite su quattro temi, senza un servizio AI. La chat conserva gli ultimi 40 messaggi, comprese le risposte; lo storico quiz gli ultimi 200 tentativi complessivi. Conteggi e migliori risultati dei quiz si riferiscono allo storico conservato. I tentativi incompleti e le risposte del test CDC restano in memoria: ricaricare o chiudere la pagina li interrompe. Respirazione e sessioni guidate condividono un solo timer attivo: avviare una pausa mette in pausa l’altra, conservandone l’avanzamento nella scheda. Timer, partita Frigo Sano e bozze transitorie non vengono ripristinati dopo la ricarica. Le sessioni offrono spunti scritti, senza audio; il promemoria serale appare nelle notifiche dell’app e non invia notifiche push o in background.
+
+Il registro del glucosio parte vuoto e conserva fino a 200 inserimenti manuali, senza connessione CGM, interpretazione clinica o valori generati. Al limite non elimina le misurazioni precedenti per fare spazio. Le ricette riprendono i tre titoli della fonte; ingredienti e preparazioni sono esempi aggiunti per questa app, con durate indicative. Le ricompense usano un’unica valuta virtuale, le Foglie. Gruppi e sfide non sono servizi sociali o classifiche fra utenti reali.
 
 Funzioni completate e verifica dei flussi: [PROTOTYPE-COMPLETION.md](PROTOTYPE-COMPLETION.md). Le nuove scene del Giardino sono documentate in [GARDEN-ASSETS.md](GARDEN-ASSETS.md).
 
@@ -78,15 +84,15 @@ Modifica gli stili in `src/styles.css` e i moduli in `assets/js/`, poi ricompila
 | `assets/data.js` | Stato, punteggi, quiz e regole del test |
 | `assets/icons.js` | SVG Heroicons incorporati |
 | `src/styles.css` | Tema daisyUI Terra, font, tipografia e respirazione |
-| `tests/` | 73 test su dominio, storage e recupero, sessioni quiz/test, timer, chat, route, schermate, ripristino ed export |
+| `tests/` | 98 test su dominio, storage e recupero, sessioni, timer, cataloghi, glucosio, route, schermate, ripristino ed export |
 | `PRODUCT.md` / `DESIGN.md` | Contesto del prodotto e sistema visivo |
 | `DAISYUI-AUDIT.md` | Componenti ufficiali adottati e controlli eseguiti |
 
 ## Verifica e fonti
 
-73 test automatici coprono le regole del prodotto, compatibilità e guasti dei salvataggi, protezione del file originale, recupero e sostituzione atomici, sessioni indipendenti dei quiz e rami del test educativo, timer, risposte tardive della chat, route, rendering, diario, report, ripristino ed esportazioni. Formattazione, controlli e build sono passati nell’ultima verifica.
+98 test automatici coprono le regole del prodotto, compatibilità e guasti dei salvataggi, protezione del file originale, recupero e sostituzione atomici, sessioni indipendenti dei quiz e rami del test educativo, timer, risposte tardive della chat, route, rendering, diario, cataloghi, sfide, registro manuale del glucosio, ripristino ed esportazioni. Formattazione, controlli e build sono parte della pubblicazione.
 
-La revisione delle correzioni include 65 catture di 20 viste a 320, 390 e 1440 px, con cinque viste anche a 2723 px, e 14 catture dei flussi. Le misure delle 60 osservazioni route/larghezza non rilevano overflow del documento o immagini rotte. La revisione indipendente e le nove catture successive chiudono i tre problemi finali di errore nel dialogo, messaggi Community e azioni di Pigna. Comportamenti e ambito sono descritti in [MAINTENANCE.md](MAINTENANCE.md#correzioni-dellinterfaccia-e-recupero-dati); i rapporti locali `.impeccable/review/fixes/finish-review.md` e `finish-verdict.md` sono esclusi dal repository pubblicato. È una verifica euristica delle superfici e dei flussi esaminati; il punteggio della critica precedente non è stato ricalcolato.
+La verifica dell’estensione Stitch comprende 170 catture native: 55 varianti a 320, 390 e 1440 px, più cinque viste a 2723 px. Le 165 misure route/larghezza non rilevano overflow del documento, immagini rotte o icone di fallback. I flussi sono stati provati in un’origine QA separata dai salvataggi delle anteprime dell’utente. Il verdetto finale chiude i due rilievi della revisione: la conclusione della pausa preserva bozza e focus del profilo, e i sei nuovi nomi delle ricompense restano leggibili nel Giardino a 320 e 1440 px. La revisione indipendente controlla sia la copertura della fonte sia la resa dell’interfaccia; ambito, prove e limiti sono descritti in [STITCH-COVERAGE.md](STITCH-COVERAGE.md) e [MAINTENANCE.md](MAINTENANCE.md#completamento-delle-pagine-stitch). Rapporti e catture di sviluppo in `.impeccable/review/` sono esclusi dal repository pubblicato. La verifica è euristica e riguarda le superfici e i casi esaminati; il punteggio della critica precedente non è stato ricalcolato.
 
 Il test è una traduzione educativa dello [strumento CDC e del suo punteggio](https://www.cdc.gov/diabetes/widgets/risktest/how-your-test-is-scored.html); non è una diagnosi o uno strumento clinico validato per questa app. Nell’app, “Informazioni e fonti” raccoglie i riferimenti educativi.
 

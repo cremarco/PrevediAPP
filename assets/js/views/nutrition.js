@@ -1,6 +1,8 @@
+import { foodExtras, foodCategories } from "../nutrition-catalog.js";
 import { foods, plateBalance } from "../../data.js";
 import {
   icon,
+  esc,
   heading,
   titleRow,
   card,
@@ -77,6 +79,18 @@ export function fridge({ state }) {
           .join("")}</div></fieldset>`,
     )
     .join("")}`;
+  const extraShelf = state.pantryExtras?.length
+    ? `<div><h3>Altri ingredienti del mercato</h3><ul class="list">${state.pantryExtras
+        .map((id) => foodExtras.find((f) => f.id === id))
+        .filter(Boolean)
+        .map(
+          (food) =>
+            `<li class="list-row grid-cols-[minmax(0,1fr)_auto] items-center px-0"><div class="min-w-0"><strong>${esc(food.name)}</strong><p class="mt-1 text-xs text-base-content/85">${foodCategories[food.group]}</p></div><div class="flex"><button class="btn btn-ghost btn-circle size-11" data-action="food-add" data-id="${food.id}" aria-label="Racconta nel diario ${esc(food.name)}">${icon("plus")}</button><button class="btn btn-ghost btn-circle size-11" data-action="market-toggle" data-id="${food.id}" aria-label="Rimuovi dalla dispensa ${esc(food.name)}">${icon("x-mark")}</button></div></li>`,
+        )
+        .join(
+          "",
+        )}</ul><p class="text-xs text-base-content/85">Puoi raccontare questi ingredienti nel diario con il pulsante Aggiungi. Il gioco del piatto propone i nove ingredienti del mercato qui sopra.</p></div>`
+    : "";
   const shelf = `${["vegetables", "protein", "carbs"]
     .map(
       (group) =>
@@ -93,6 +107,6 @@ export function fridge({ state }) {
     )
     .join(
       "",
-    )}<p class="text-xs text-base-content/85">Le tue scelte vengono salvate in questo browser, per questo sito.</p>`;
+    )}${extraShelf}<p class="text-xs text-base-content/85">Le tue scelte vengono salvate in questo browser, per questo sito.</p>`;
   return `${heading("Il frigo della salute.", "Una dispensa di idee per il tuo prossimo pasto.", link("alimentazione", "Alimentazione", "arrow-left"))}<div class="grid items-start gap-6 @4xl:grid-cols-[1.5fr_1fr]">${card("Il mercato del bosco", market)}${card("", `${illustratedTitle("La tua dispensa", "alimentazione")}${shelf}`, `<div class="w-full"><p class="mb-3 text-sm text-base-content/85">${suggestion.missing.length ? `Per comporre il piatto, aggiungi: ${suggestion.missing.map((group) => ({ vegetables: "verdure", carbs: "carboidrati", protein: "proteine" })[group]).join(", ")}.` : "Hai ingredienti di tutti e tre i gruppi. Componiamo quattro porzioni con la tua dispensa?"}</p><button class="btn btn-primary h-auto min-h-11 w-full py-2 whitespace-normal" data-action="pantry-plate" ${suggestion.missing.length ? "disabled" : ""}>Usa la mia dispensa ${icon("arrow-right")}</button><a href="#piatto" class="btn btn-ghost mt-2 min-h-11 w-full">Scegli liberamente</a></div>`)}</div>`;
 }

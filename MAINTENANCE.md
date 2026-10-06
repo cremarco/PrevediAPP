@@ -1,6 +1,6 @@
 # Manutenzione di PREVEDIApp
 
-Refactoring ed estensione del prototipo del 5 ottobre 2026, con correzioni dell’interfaccia e del recupero dati del 6 ottobre. JavaScript nativo a moduli; HTML, Tailwind 4 e componenti daisyUI 5 con tema Terra e Heroicons.
+Refactoring ed estensione del prototipo del 5 ottobre 2026, con correzioni dell’interfaccia, recupero dati e completamento delle pagine Stitch del 6 ottobre. JavaScript nativo a moduli; HTML, Tailwind 4 e componenti daisyUI 5 con tema Terra e Heroicons.
 
 ## Dove intervenire
 
@@ -11,15 +11,19 @@ Refactoring ed estensione del prototipo del 5 ottobre 2026, con correzioni dell�
 | `assets/js/controller.js` | Eventi delegati, coordinamento di azioni, rendering, focus e sincronizzazione |
 | `assets/js/config.js` | Nomi delle route, navigazioni e ruoli cromatici delle categorie |
 | `assets/js/router.js` | Validazione delle route e caricamento su richiesta delle schermate |
-| `assets/js/views/` | Sette moduli per percorso, benessere, alimentazione, community, Pigna, apprendimento e profilo |
+| `assets/js/views/` | Renderer delle aree originali e moduli di esplorazione alimenti, contenuti guidati, social, foresta e glucosio |
 | `assets/js/ui/components.js` | Helper HTML condivisi con struttura daisyUI nativa |
 | `assets/js/ui/dialogs.js` | Registrazione, modifica e riepilogo di ripristino con dialogo nativo |
 | `assets/js/records.js` | Validazione di date/voci, modifica atomica, rimozione/annullamento e messaggi locali |
 | `assets/js/insights.js` | Report 7/30 giorni, riepilogo quiz, tappe e piatto dalla dispensa |
 | `assets/js/backup.js` | Validazione della copia JSON, limite 2 MB e importazione dei soli campi noti |
 | `assets/js/store.js` | Lettura, protezione del file originale, preflight, salvataggio e recupero atomico |
-| `assets/js/session.js` | Stato transitorio di filtri, piatto, quiz per categoria e rami del test |
-| `assets/js/timer.js` | Orologio preciso della respirazione e ciclo dei callback |
+| `assets/js/session.js` | Stato transitorio di filtri, piatto, quiz, test, cataloghi, routine, gioco e bozze glucosio |
+| `assets/js/timer.js` | Orologio preciso con durate configurabili per respirazione, sessioni guidate e Frigo Sano |
+| `assets/js/nutrition-catalog.js` | Catalogo alimenti, ricette di esempio, ricerca e regole di Frigo Sano |
+| `assets/js/guided-content.js` | Gesti del risveglio, routine serale e tre sessioni scritte |
+| `assets/js/social-catalog.js` | Gruppi, filtri e progressi delle sfide a partire dal diario |
+| `assets/js/glucose.js` | Validazione, normalizzazione, periodi e CSV delle misurazioni manuali |
 | `assets/js/breathing.js` | Fasi, Web Animation, pausa, visibilità e preferenze di movimento |
 | `assets/js/conversation.js` | Invio, risposta differita e cancellazione delle operazioni Pigna |
 | `assets/js/export.js` | CSV, Blob e download |
@@ -32,7 +36,7 @@ Le schermate ricevono uno snapshot esplicito `{ state, ui, timer, chatBusy }` e 
 ## Stato e compatibilità
 
 - `store.state` contiene il percorso persistente; la chiave resta `prevediapp.v1` e lo schema resta versione 1.
-- I salvataggi validi esistenti vengono mantenuti. `posts`, `quizHistory` e le letture delle notifiche sono campi opzionali; i vecchi quiz risultano completati senza inventare un punteggio storico. Chat e selezioni opzionali danneggiate vengono normalizzate, impedendo il blocco delle schermate.
+- I salvataggi validi esistenti vengono mantenuti. `posts`, `quizHistory`, letture delle notifiche e campi dell’estensione Stitch sono opzionali; i vecchi quiz risultano completati senza inventare un punteggio storico. Chat e selezioni opzionali danneggiate vengono normalizzate, impedendo il blocco delle schermate.
 - Un errore di accesso o scrittura lascia le modifiche ordinarie in memoria e mostra l’avviso di esportarle prima di chiudere. Un salvataggio illeggibile attiva invece la protezione: `recoveryRaw` conserva la stringa originale, la sincronizzazione non la sostituisce e le azioni persistenti sono sospese fino a una scelta esplicita.
 - `prepareWrite()` esegue il preflight prima della mutazione: restituisce `false` per un file protetto e consente modifiche temporanee se lo storage è inaccessibile. Se la lettura iniziale era negata, un percorso valido scoperto dopo viene protetto come `existing`; `recover()` permette di adottarlo esplicitamente. `save()`, `reset()`, `replace()`, `recover()` e `sync()` restituiscono un esito booleano, che il controller deve rispettare.
 - `reset()`, `replace()` e `recover()` scrivono il prossimo stato prima di sostituire quello in memoria. Un fallimento conserva stato e copia protetta; il controller annulla operazioni pendenti e sessioni solo dopo il successo. L’export JSON durante la protezione usa il raw originale e il nome `originale-da-recuperare`, senza presentarlo come backup già validato.
@@ -57,7 +61,7 @@ npm run build
 
 `npm run format` formatta JavaScript, script e test con Prettier. Le versioni di esbuild e Prettier sono fissate in `package.json`; `package-lock.json` rende riproducibili le dipendenze. GitHub Actions verifica formato, sintassi, test e build prima della pubblicazione.
 
-Il comando `check` verifica ricorsivamente la sintassi dei moduli. I 73 test coprono le regole del prodotto, compatibilità e guasti dello storage, protezione del raw, preflight e sostituzione atomica, sessioni quiz per categoria e rami del test, callback del timer, risposte tardive della chat, route non valide, ripetizione di un caricamento fallito, rendering di tutte le schermate, diario, annullamento, report, tappe, ripristino ed esportazione CSV.
+Il comando `check` verifica ricorsivamente la sintassi dei moduli. I 98 test coprono le regole del prodotto, compatibilità e guasti dello storage, protezione del raw, preflight e sostituzione atomica, sessioni quiz per categoria e rami del test, callback del timer, risposte tardive della chat, route non valide, ripetizione di un caricamento fallito, rendering di tutte le schermate, diario, annullamento, report, tappe, ripristino ed esportazione CSV, cataloghi alimenti/ricette, sfide, contenuti guidati e registro manuale del glucosio.
 
 Per aggiungere una schermata:
 
@@ -121,4 +125,40 @@ Le transizioni di quiz e test portano il focus alla nuova domanda o all’esito;
 
 Progressi a 30 giorni raggruppa i giorni senza registrazioni in `details`/`summary` con il componente nativo `collapse`; un giorno non registrato non diventa uno zero misurato. Lo stesso componente espone i quattro temi vicino al campo di Pigna. Le azioni del fallback restano in una colonna nella bolla; nei post personali Community le azioni occupano una riga successiva su telefono e la colonna dedicata su desktop. Timer e avvio precedono la guida nella pagina Stress; nel Piatto la selezione precede il modello. Sono adattamenti delle viste con componenti esistenti, senza nuovi token o raster.
 
-L’ultima esecuzione fornita dal builder ha superato formato, 73 test e build. La revisione indipendente ha esaminato 65 catture finali, 14 catture dei flussi e nove catture dei tre fix successivi. `.impeccable/review/fixes/final/metrics.json` riporta 60 osservazioni di 20 viste a 320, 390 e 1440 px senza overflow del documento o immagini rotte; cinque viste sono state catturate anche a 2723 px. Il verdetto locale `.impeccable/review/fixes/finish-verdict.md` chiude i tre finding della revisione in `finish-review.md`; rapporti e catture QA sono esclusi dal repository pubblicato. Queste evidenze verificano i casi esaminati e non ricalcolano il punteggio della critica generale. Le misure e i conteggi delle sezioni precedenti descrivono le rispettive build storiche.
+L’esecuzione di quella correzione fornita dal builder aveva superato formato, 73 test e build. La revisione indipendente ha esaminato 65 catture finali, 14 catture dei flussi e nove catture dei tre fix successivi. `.impeccable/review/fixes/final/metrics.json` riporta 60 osservazioni di 20 viste a 320, 390 e 1440 px senza overflow del documento o immagini rotte; cinque viste sono state catturate anche a 2723 px. Il verdetto locale `.impeccable/review/fixes/finish-verdict.md` chiude i tre finding della revisione in `finish-review.md`; rapporti e catture QA sono esclusi dal repository pubblicato. Queste evidenze verificano i casi esaminati e non ricalcolano il punteggio della critica generale. Le misure e i conteggi delle sezioni precedenti descrivono le rispettive build storiche.
+
+## Completamento delle pagine Stitch
+
+L’export completo del progetto è stato letto come fonte statica, senza eseguirne HTML o JavaScript: 137 cartelle, 115 HTML e 99 PNG; 79 cartelle hanno sia HTML sia anteprima. Le 36 cartelle HTML senza anteprima contengono 33 copie/varianti dell’onboarding e tre frammenti Three.js del gioco del piatto. Le altre cartelle sono asset o sistemi di design. La verifica indipendente distingue 37 famiglie funzionali, tutte rappresentate da route, stati o dialoghi attuali. [Mappa e adattamenti](STITCH-COVERAGE.md).
+
+Le 24 nuove route nominali portano il totale a 41; ricette, gruppi, sessioni e categorie di apprendimento producono 55 varianti indirizzabili, tutte raggiungibili dal Percorso. `routeNames`, i loader espliciti e `routeParents` condividono il contratto di navigazione; i dettagli accettano solo identificativi limitati e validano gli ID nel catalogo. Il menu Esplora e i collegamenti fra le aree mantengono raggiungibili i nuovi hub.
+
+### Stato aggiunto senza cambiare schema
+
+La chiave resta `prevediapp.v1`, versione 1. I nuovi campi opzionali vengono inizializzati per i salvataggi precedenti:
+
+- `recipeFavorites`: i tre ID ricetta ammessi; `foodSearches`: fino a otto ricerche distinte da 80 caratteri.
+- `pantryExtras`: i dodici alimenti del nuovo mercato separati dai nove ingredienti di `fridge`; gli extra restano visibili nella dispensa e registrabili come pasto.
+- `joinedChallenges`: quattro sfide ammesse; `joined` ora accetta anche i due nuovi gruppi, per quattro gruppi totali. I progressi delle sfide derivano dalle voci effettive del diario.
+- `sleepRoutine`: i tre gesti ammessi; `sleepReminder`: attivazione e ora valida, con valore iniziale 21:30. Il promemoria compare nelle notifiche locali dell’app.
+- `glucoseReadings`: fino a 200 inserimenti con identità, data, ora, valore, contesto, note e creazione. L’inserimento al limite viene rifiutato; non vengono eliminate automaticamente misurazioni precedenti.
+
+`parseState()` protegge l’originale se le misurazioni presenti non sono leggibili o se la normalizzazione ne perderebbe una. Il ripristino valida anche identità, duplicati, numero massimo e ogni misurazione prima di sostituire lo stato. Il form conserva la bozza quando cambia il periodo; la rimozione è annullabile. Il CSV dedicato contiene il periodo selezionato, mentre il backup JSON conserva tutte le misurazioni. I limiti del campo da 1 a 1000 mg/dL con un decimale sono tecnici, non intervalli clinici.
+
+`ui.discovery`, `ui.guided`, `ui.social`, `ui.forest`, `ui.learning` e `ui.glucose` rimangono transitori. Le azioni persistenti passano dal preflight dello storage e rispettano la protezione del file originale. Ripristino, recupero, reset e sincronizzazione riusciti annullano le operazioni pendenti; un fallimento mantiene le bozze e lo stato protetto.
+
+### Timer, giochi e contenuti
+
+`createTimer()` accetta durate e durata iniziale. Le tre sessioni guidate usano 10, 15 e 5 minuti; respirazione e sessioni hanno un solo timer attivo alla volta, con pausa reciproca e ripresa dell’avanzamento nella scheda. Completare una sessione registra una pausa nel diario, con il premio giornaliero già previsto. Il completamento aggiorna solo le superfici di attività: non ricrea il profilo durante una modifica. La ricarica interrompe timer, tentativi incompleti e partita; non esiste ripresa persistente. Frigo Sano propone cinque scelte di gruppi alimentari, tre tentativi e 30 secondi, senza premi o storico permanenti.
+
+Le sessioni sono spunti scritti, senza audio o video. Le tre ricette riprendono titoli e tempi indicativi della fonte, ma ingredienti e preparazioni sono esempi autoriali dell’adattamento. Ricerca e mercato consultano 21 alimenti locali: non effettuano scansioni o calcoli automatici di nutrienti. Il registro del glucosio è manuale e parte vuoto; non è un CGM. Community, adesioni e incoraggiamenti sono dimostrativi e locali, senza account, chat fra persone o classifiche condivise.
+
+Le collezioni Natura/Inverno contengono nove ricompense; i tre costi precedenti restano invariati e tutti gli oggetti usano Foglie virtuali. Le sei nuove ricompense mostrano una propria anteprima accanto all’Alberello originale. Prompt, master, conversioni WebP e provenienza delle immagini sono in [STITCH-ASSETS.md](STITCH-ASSETS.md).
+
+### Verifica e continuità del sistema
+
+I controlli del builder coprono 98 test. La matrice browser finale contiene 170 catture native: 55 varianti a 320 × 740, 390 × 844 e 1440 × 1000, più cinque viste a 2723 × 1210. Le 165 misure route/larghezza non rilevano overflow, immagini rotte o icone di fallback. I flussi di ricerca/pasto, preferite/dispensa, gioco, movimento/diario, routine/notifiche, pause, gruppi/sfide e glucosio sono stati provati con dati sintetici in un’origine separata dalle anteprime dell’utente.
+
+Il verdetto finale chiude i due rilievi materiali della revisione: bozza e focus del profilo preservati al completamento della pausa, con una sola voce Pace Interiore da 10 minuti nel diario, e tutti i sei nuovi selettori delle ricompense leggibili a 320/1440 px, con Sciarpa invernale applicata. La prova del completamento usa il timer compilato di produzione e una fixture nativa con avanzamento controllato di `Date.now` tramite F8: verifica l’evento, senza dichiarare un’attesa reale di dieci minuti. Il verdetto riguarda questi due casi e le catture fornite, senza una nuova ricerca generale di difetti.
+
+La verifica indipendente conferma 37 famiglie rappresentate e 55 varianti raggiungibili; nessuna famiglia di pagine manca. Il confronto con i token in `src/styles.css`, gli helper condivisi e i renderer conferma palette Terra, Literata/Nunito Sans, componenti daisyUI nativi e Heroicons. Questa è un’estensione dell’identità esistente: `DESIGN.md` e `.impeccable/design.json` sono conservati, senza migrazioni del sistema o correzioni di deriva preesistente. Rapporti e catture in `.impeccable/review/stitch-coverage/` sono artefatti di sviluppo esclusi dalla distribuzione; i conteggi e le misure delle sezioni precedenti rimangono storici.

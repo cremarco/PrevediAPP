@@ -7,6 +7,7 @@ import {
   card,
   field,
   illustration,
+  resourceMenu,
 } from "../ui/components.js";
 
 const communityAvatars = {
@@ -89,5 +90,27 @@ export function community({ state, ui }) {
         .join("")}</ul>`
     : "";
   const composer = `<form id="community-form"><fieldset class="fieldset gap-3"><legend class="fieldset-legend font-serif text-lg font-medium">${ui.community.editing ? "Modifica il tuo messaggio" : "Un pensiero per il piccolo bosco"}</legend>${field("Il tuo messaggio nella demo", `<textarea id="community-text" name="text" class="textarea border-secondary/75 placeholder:text-base-content/85 min-h-24 w-full" maxlength="400" required placeholder="Racconta un piccolo passo di oggi…" aria-describedby="community-count community-local">${esc(ui.community.draft)}</textarea>`)}<div class="flex flex-wrap justify-between gap-2 text-xs text-base-content/85"><span id="community-local">Resta sul tuo dispositivo. Non viene inviato a nessuno.</span><span id="community-count">${ui.community.draft.length}/400 caratteri</span></div><p id="community-error" class="alert alert-error alert-soft empty:hidden" role="alert"></p><div class="card-actions"><button class="btn btn-primary" type="submit">${icon("check")}${ui.community.editing ? "Salva le modifiche" : "Salva nella demo"}</button>${ui.community.editing ? '<button class="btn btn-ghost" type="button" data-action="cancel-post-edit">Annulla modifica</button>' : ""}</div></fieldset></form><div class="divider my-0"></div>`;
-  return `${heading("Insieme, il percorso cresce.", "Idee, piccoli incoraggiamenti e un giardino condiviso.")}<div class="alert alert-info alert-soft mb-6" role="note">${icon("information-circle")}<span>Community dimostrativa: persone, gruppi e messaggi sono esempi. Le tue interazioni sono salvate solo sul tuo dispositivo.</span></div><div class="grid gap-6 @4xl:grid-cols-2">${groupCards}</div><div class="mt-6 grid items-start gap-6 @4xl:grid-cols-2">${card("Il giardino della community", people)}${card("Dal nostro piccolo bosco", composer + ownPosts + posts)}</div>`;
+  return `${heading("Insieme, il percorso cresce.", "Idee, piccoli incoraggiamenti e un giardino condiviso.")}<div class="alert alert-info alert-soft mb-6" role="note">${icon("information-circle")}<span>Community dimostrativa: persone, gruppi e messaggi sono esempi. Le tue interazioni sono salvate solo sul tuo dispositivo.</span></div>${card(
+    "Esplora la community",
+    resourceMenu([
+      [
+        "gruppi",
+        "user-group",
+        "Gruppi della community",
+        "Esplora temi e adesioni dimostrative",
+      ],
+      [
+        "sfide",
+        "star",
+        "Sfide della community",
+        "Obiettivi facoltativi dai tuoi gesti reali",
+      ],
+      [
+        "giardino-community",
+        "sun",
+        "Giardino della community",
+        "Un incoraggiamento nel bosco dimostrativo",
+      ],
+    ]),
+  )}<div class="mt-6 grid gap-6 @4xl:grid-cols-2">${groupCards}</div><div class="mt-6 grid items-start gap-6 @4xl:grid-cols-2">${card("Il giardino della community", people)}${card("Dal nostro piccolo bosco", composer + ownPosts + posts)}</div>`;
 }

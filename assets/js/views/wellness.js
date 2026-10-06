@@ -27,6 +27,31 @@ export function wellness({ state }, kind) {
       emptyText: "Aggiungi un pasto per raccontare la tua giornata.",
       resources: [
         [
+          "guida-alimentazione",
+          "chart-pie",
+          "Mangia con equilibrio",
+          "Esplora il metodo del piatto",
+        ],
+        [
+          "ricette",
+          "book-open",
+          "Ricette e benessere",
+          "Tre idee da personalizzare",
+        ],
+        [
+          "ricerca-alimento",
+          "magnifying-glass",
+          "Cerca un alimento",
+          "Catalogo locale e ricerche recenti",
+        ],
+        [
+          "mercato",
+          "archive-box",
+          "Mercato del bosco",
+          "Conserva gli ingredienti nella dispensa",
+        ],
+        ["giochi", "sparkles", "Gioca e impara", "Piatto, Frigo Sano e quiz"],
+        [
           "piatto",
           "chart-pie",
           "Crea il piatto",
@@ -53,6 +78,24 @@ export function wellness({ state }, kind) {
       emptyText: "Registra il movimento che hai fatto oggi, al tuo ritmo.",
       resources: [
         [
+          "dettaglio-attivita",
+          "chart-bar",
+          "Dettaglio attività",
+          "La settimana dei tuoi minuti registrati",
+        ],
+        [
+          "diario-attivita",
+          "calendar-days",
+          "Diario attività fisica",
+          "Ritrova e correggi le tue attività",
+        ],
+        [
+          "risveglio",
+          "sun",
+          "Risveglio con Pigna",
+          "Scegli i gesti della tua routine",
+        ],
+        [
           "quiz",
           "book-open",
           "Muoversi con consapevolezza",
@@ -71,6 +114,18 @@ export function wellness({ state }, kind) {
       emptyTitle: "Nessun sonno registrato oggi",
       emptyText: "Racconta il tuo riposo con ore e sensazioni al risveglio.",
       resources: [
+        [
+          "luce-blu",
+          "moon",
+          "La tua routine serale",
+          "Gesti e promemoria interni al sito",
+        ],
+        [
+          "meditazione",
+          "heart",
+          "Meditazione e mindfulness",
+          "Tre sessioni con timer e guida scritta",
+        ],
         [
           "stress",
           "face-smile",
@@ -112,7 +167,7 @@ export function wellness({ state }, kind) {
       : kind === "attivita"
         ? "Scegli un obiettivo realistico per te: puoi cambiarlo dal profilo. Anche le pause di movimento fanno parte del tuo diario."
         : "Spegni le notifiche, scegli un’attività tranquilla e ritaglia un momento tutto tuo prima di dormire.";
-  return `${heading(c.title, c.desc)}${card("", `<div><h2>${c.intro}</h2><p class="mt-2 max-w-[72ch] text-sm text-base-content/85">${c.body}</p></div>`, "", wellnessPalette[kind].surface, "", kind)}<div class="mt-6 grid items-start gap-6 @4xl:grid-cols-[1.5fr_1fr]">${card("", body)}<aside class="grid gap-6">${card("Esplora e impara", resourceMenu(c.resources.map(([r, s, t, d]) => [r === "quiz" ? "quiz/" + kind : r, s, t, d])))}${card(tipTitle, `<p class="text-sm text-base-content/85">${tip}</p>`, kind === "alimentazione" ? link("informazioni", "Scopri le fonti") : "", "bg-secondary/5")}</aside></div>`;
+  return `${heading(c.title, c.desc)}${card("", `<div><h2>${c.intro}</h2><p class="mt-2 max-w-[72ch] text-sm text-base-content/85">${c.body}</p></div>`, "", wellnessPalette[kind].surface, "", kind)}<div class="mt-6 grid items-start gap-6 @4xl:grid-cols-[1.5fr_1fr]">${card("", body)}<aside class="grid gap-6">${card("Esplora e impara", resourceMenu(c.resources.map(([r, s, t, d]) => [r === "quiz" ? "impara/" + kind : r, s, t, d])))}${card(tipTitle, `<p class="text-sm text-base-content/85">${tip}</p>`, kind === "alimentazione" ? link("informazioni", "Scopri le fonti") : "", "bg-secondary/5")}</aside></div>`;
 }
 
 export function stress({
@@ -123,7 +178,15 @@ export function stress({
   const controls = `<div class="grid gap-4"><div class="flex flex-wrap items-center justify-center gap-3"><div class="font-serif text-3xl tabular-nums" id="timer-time" aria-label="Tempo rimanente">${formatTime(guide.remaining)}</div><div class="join">${[60, 180, 300].map((t) => `<button class="btn btn-outline btn-sm min-h-11 join-item px-3 ${timer.duration === t ? "btn-primary btn-active" : ""}" data-action="timer-duration" data-duration="${t}" aria-pressed="${timer.duration === t}" ${timer.started ? "disabled" : ""}>${t / 60} min</button>`).join("")}</div></div><div class="card-actions justify-center"><button class="btn btn-primary min-h-11" id="timer-button" data-action="timer-toggle">${icon(timer.running ? "pause" : "play")}${timer.running ? "Pausa" : timer.started ? "Riprendi" : "Inizia la pausa"}</button><button class="btn btn-outline btn-square size-11" data-action="timer-reset" aria-label="Ricomincia la respirazione">${icon("arrow-path")}</button></div></div>`;
   const visual = `<div class="grid justify-items-center gap-3 py-2" data-breathing><div class="radial-progress bg-primary/5 text-primary [--size:13rem] [--thickness:3px] sm:[--size:14rem]" id="breathing-progress" style="--value:${guide.progress}" role="progressbar" aria-label="Avanzamento della pausa" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${guide.progress}" aria-valuetext="${guide.progress}% della pausa"><span id="breathing-progress-text" class="sr-only">${guide.progress}%</span><div class="avatar" data-breathing-core><div class="w-36 rounded-full bg-primary/15 sm:w-40"><img src="assets/images/pigna.png" alt="" width="512" height="512" class="object-contain p-5"></div></div></div><div class="text-center"><h3 id="breathing-phase" class="text-2xl" role="status" aria-live="polite" aria-atomic="true">${guide.phase}</h3><p id="breathing-cue" class="mt-1 min-h-6 text-xs text-base-content/85">${guide.cue}</p></div></div>`;
   const session = `<div class="grid gap-5"><div class="sm:order-2">${controls}</div><p class="text-center text-sm text-base-content/85 sm:order-0">Segui il ritmo solo se ti è comodo, senza trattenere il respiro.</p><div class="sm:order-1">${visual}</div><label class="label min-h-11 justify-center gap-3 text-sm text-base-content sm:order-3"><input id="breathing-motion" type="checkbox" class="toggle toggle-primary toggle-sm" ${breathing.enabled ? "checked" : ""} ${breathing.reduced ? "disabled" : ""} ${breathing.reduced ? 'aria-describedby="breathing-motion-note"' : ""}>Animazione</label><p id="breathing-motion-note" class="text-center text-xs text-base-content/85 sm:order-4" ${breathing.reduced ? "" : "hidden"}>Movimento ridotto attivo sul dispositivo.</p><p class="text-center text-xs text-base-content/85 sm:order-5">Completa la pausa per registrarla nel diario. +15 foglie una volta al giorno.</p></div>`;
-  const tips = `<div><h3>Ascolta il tuo corpo</h3><p class="mt-2 text-sm text-base-content/85">Se senti fastidio o capogiri, fermati e torna al tuo respiro naturale.</p></div><div class="divider my-0"></div><div><h3>Non occorre fare di più</h3><p class="mt-2 text-sm text-base-content/85">Anche un minuto può essere un’occasione per interrompere la fretta e osservare come ti senti.</p></div>${resourceMenu([["quiz/stress", "book-open", "Gioca e impara", "3 domande sul benessere"]])}`;
+  const tips = `${resourceMenu([
+    [
+      "meditazione",
+      "heart",
+      "Meditazione e mindfulness",
+      "Tre sessioni e spunti scritti",
+    ],
+    ["benessere", "moon", "Benessere e riposo", "Pause e routine della sera"],
+  ])}<div><h3>Ascolta il tuo corpo</h3><p class="mt-2 text-sm text-base-content/85">Se senti fastidio o capogiri, fermati e torna al tuo respiro naturale.</p></div><div class="divider my-0"></div><div><h3>Non occorre fare di più</h3><p class="mt-2 text-sm text-base-content/85">Anche un minuto può essere un’occasione per interrompere la fretta e osservare come ti senti.</p></div>${resourceMenu([["impara/stress", "book-open", "Gioca e impara", "3 domande sul benessere"]])}`;
   return `${heading("Un momento tutto per te.", "Fermati, respira, riparti al tuo ritmo.")}<div class="grid items-start gap-6 @4xl:grid-cols-[1.5fr_1fr]">${card("Respira con Pigna", session)}${card("", `<div><h2>Lascia un po’ di spazio alla calma</h2><p class="mt-2 text-sm text-base-content/85">Una pausa breve e un respiro confortevole. Puoi tenere gli occhi aperti e interrompere quando vuoi.</p></div>`, "", `${wellnessPalette.stress.surface} @4xl:order-first @4xl:col-span-2`, "", "stress")}<aside class="grid gap-6">${card("Piccoli spazi di benessere", tips)}<aside class="card card-side bg-accent/20"><figure class="pl-5"><img src="assets/images/pigna.png" alt="" width="60" height="70" class="h-20 w-16 object-contain"></figure><div class="card-body p-5"><h3 class="card-title font-serif text-lg font-medium">Qui non c’è fretta.</h3><p class="text-sm text-base-content/85">Questo momento è soltanto tuo.</p></div></aside></aside></div>`;
 }
 

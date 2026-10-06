@@ -1,3 +1,4 @@
+import { initialFridgeGame } from "./nutrition-catalog.js";
 import { localDate } from "../data.js";
 
 export const riskQuestions = [
@@ -151,6 +152,30 @@ export const initialSession = () => {
   const quiz = initialQuiz();
   return {
     diary: { date: localDate(), filter: "all" },
+    discovery: {
+      query: "",
+      category: "all",
+      recipe: "quinoa",
+      recipeQuery: "",
+      recipeFilter: "all",
+      fridgeGame: initialFridgeGame(),
+    },
+    guided: {
+      exerciseIds: [],
+      exerciseMinutes: 5,
+      routine: [],
+      sessionId: "pace",
+      category: "tutte",
+    },
+    social: {
+      query: "",
+      category: "all",
+      groupId: "walkers",
+      friendsQuery: "",
+    },
+    forest: { theme: "all" },
+    learning: { category: "all" },
+    glucose: { period: 7, editing: "" },
     plate: { items: [], message: "", meal: "Pranzo" },
     progress: { category: "movement", period: 7 },
     community: { editing: "", draft: "" },

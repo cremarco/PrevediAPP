@@ -1,3 +1,4 @@
+import { normalizedReadings } from "./js/glucose.js";
 // Product data and pure domain rules. No personal data or network requests.
 export const KEY = "prevediapp.v1";
 const dayFormatter = new Intl.DateTimeFormat("sv-SE", {
@@ -21,6 +22,13 @@ export const initialState = () => ({
   fridge: [],
   posts: [],
   quizHistory: [],
+  recipeFavorites: [],
+  foodSearches: [],
+  pantryExtras: [],
+  joinedChallenges: [],
+  sleepRoutine: [],
+  sleepReminder: { enabled: false, time: "21:30" },
+  glucoseReadings: [],
   decoration: "none",
   onboarded: false,
   notificationsRead: false,
@@ -231,6 +239,66 @@ export const rewards = [
     cost: 160,
     icon: "sparkles",
   },
+  {
+    id: "birdhouse",
+    name: "Casetta per uccellini",
+    description: "Un nuovo rifugio virtuale per il bosco.",
+    cost: 120,
+    icon: "home",
+    theme: "nature",
+    image: "assets/images/reward-birdhouse-v1.webp",
+    preview: true,
+  },
+  {
+    id: "pinecones",
+    name: "Pigne rugiadose",
+    description: "Un dettaglio del bosco da portare nel giardino.",
+    cost: 140,
+    icon: "gift",
+    theme: "nature",
+    image: "assets/images/reward-pinecones-v1.webp",
+    preview: true,
+  },
+  {
+    id: "scarf",
+    name: "Sciarpa invernale",
+    description: "Un piccolo accessorio per la collezione d’inverno.",
+    cost: 150,
+    icon: "gift",
+    theme: "winter",
+    image: "assets/images/reward-scarf.webp",
+    preview: true,
+  },
+  {
+    id: "ice",
+    name: "Cristalli di ghiaccio",
+    description: "Un bagliore d’inverno per il tuo giardino virtuale.",
+    cost: 200,
+    icon: "sparkles",
+    theme: "winter",
+    image: "assets/images/reward-ice.webp",
+    preview: true,
+  },
+  {
+    id: "snow",
+    name: "Manto di neve",
+    description: "Una piccola scena d’inverno nel bosco.",
+    cost: 180,
+    icon: "cloud",
+    theme: "winter",
+    image: "assets/images/reward-snow.webp",
+    preview: true,
+  },
+  {
+    id: "fox",
+    name: "Volpe artica",
+    description: "Una compagna virtuale per la collezione invernale.",
+    cost: 250,
+    icon: "heart",
+    theme: "winter",
+    image: "assets/images/reward-fox.webp",
+    preview: true,
+  },
 ];
 export function dayEntries(state, date = localDate()) {
   return state.entries.filter((e) => e.date === date);
@@ -416,6 +484,70 @@ export function parseState(raw) {
     rewards.some((r) => r.id === id),
   );
   state.fridge = state.fridge.filter((id) => foods.some((f) => f.id === id));
+  const ids = (value, allowed) =>
+    Array.isArray(value)
+      ? [...new Set(value)].filter((id) => allowed.includes(id))
+      : [];
+  state.joined = ids(state.joined, [
+    "walkers",
+    "cooks",
+    "meditation",
+    "breathing",
+  ]);
+  state.joinedChallenges = ids(state.joinedChallenges, [
+    "mindful-week",
+    "movement-week",
+    "meal-week",
+    "water-today",
+  ]);
+  state.recipeFavorites = ids(state.recipeFavorites, [
+    "quinoa",
+    "salmone",
+    "hummus",
+  ]);
+  state.pantryExtras = ids(state.pantryExtras, [
+    "mela-rossa",
+    "mela-verde",
+    "mirtilli",
+    "ceci",
+    "noci",
+    "yogurt",
+    "avena",
+    "farro",
+    "uova",
+    "carote",
+    "zucchine",
+    "succo-mela",
+  ]);
+  state.sleepRoutine = ids(state.sleepRoutine, ["schermi", "luce", "lettura"]);
+  state.foodSearches = Array.isArray(state.foodSearches)
+    ? [
+        ...new Set(
+          state.foodSearches
+            .filter((item) => typeof item === "string")
+            .map((item) => item.trim().slice(0, 80))
+            .filter(Boolean),
+        ),
+      ].slice(0, 8)
+    : [];
+  state.sleepReminder = {
+    enabled: state.sleepReminder?.enabled === true,
+    time: /^([01]\d|2[0-3]):[0-5]\d$/.test(state.sleepReminder?.time)
+      ? state.sleepReminder.time
+      : "21:30",
+  };
+  state.glucoseReadings = normalizedReadings(
+    state.glucoseReadings,
+    localDate(),
+  );
+  if (
+    Object.hasOwn(value, "glucoseReadings") &&
+    (!Array.isArray(value.glucoseReadings) ||
+      value.glucoseReadings.length !== state.glucoseReadings.length)
+  )
+    throw new Error(
+      "Le misurazioni salvate non sono leggibili. Conserva il file originale prima di recuperare il percorso.",
+    );
   state.decoration = state.claimed.includes(state.decoration)
     ? state.decoration
     : "none";

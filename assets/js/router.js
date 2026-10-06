@@ -10,7 +10,12 @@ const quizCategories = new Set([
 export function resolveRoute(hash) {
   const [requested, category] = hash.replace(/^#/, "").split("/");
   const view = Object.hasOwn(routeNames, requested) ? requested : "percorso";
+  const detailed = ["ricetta", "gruppo", "sessione", "impara"].includes(view);
+  const detail = /^[a-z0-9][a-z0-9-]{0,39}$/.test(category || "")
+    ? category
+    : "";
   return {
+    ...(detailed ? { detail } : {}),
     view,
     category: quizCategories.has(category) ? category : "alimentazione",
     skipToMain: hash === "#main",
@@ -19,6 +24,47 @@ export function resolveRoute(hash) {
 
 // Explicit imports let esbuild create route chunks and preserve relative GitHub Pages URLs.
 const loaders = {
+  inizio: () => import("./views/guided.js").then((m) => m.onboarding),
+  "conosci-pigna": () => import("./views/guided.js").then((m) => m.pignaIntro),
+  "guida-alimentazione": () =>
+    import("./views/food-discovery.js").then((m) => m.dietaryGuide),
+  ricette: () => import("./views/food-discovery.js").then((m) => m.recipeList),
+  ricetta: () =>
+    import("./views/food-discovery.js").then((m) => m.recipeDetail),
+  "ricerca-alimento": () =>
+    import("./views/food-discovery.js").then((m) => m.foodSearch),
+  mercato: () =>
+    import("./views/food-discovery.js").then(
+      (m) => (ctx) => m.foodSearch(ctx, true),
+    ),
+  giochi: () => import("./views/food-discovery.js").then((m) => m.foodGames),
+  "frigo-sano": () =>
+    import("./views/food-discovery.js").then((m) => m.fridgeGame),
+  impara: () => import("./views/food-discovery.js").then((m) => m.learningHub),
+  "dettaglio-attivita": () =>
+    import("./views/guided.js").then((m) => m.movementDetail),
+  "diario-attivita": () =>
+    import("./views/explore.js").then((m) => m.movementDiary),
+  risveglio: () => import("./views/guided.js").then((m) => m.wakeup),
+  "luce-blu": () => import("./views/guided.js").then((m) => m.sleepGuide),
+  benessere: () => import("./views/guided.js").then((m) => m.benessereHub),
+  meditazione: () => import("./views/guided.js").then((m) => m.mindfulness),
+  sessione: () =>
+    import("./views/guided.js").then(
+      (m) => (ctx) => m.guidedSession(ctx, ctx.ui.guided.sessionId),
+    ),
+  gruppi: () =>
+    import("./views/social-discovery.js").then((m) => m.groupsCatalog),
+  gruppo: () =>
+    import("./views/social-discovery.js").then((m) => m.groupDetail),
+  sfide: () => import("./views/social-discovery.js").then((m) => m.challenges),
+  "giardino-community": () =>
+    import("./views/social-discovery.js").then((m) => m.communityGarden),
+  evoluzione: () =>
+    import("./views/forest-discovery.js").then((m) => m.evolution),
+  ricompense: () =>
+    import("./views/forest-discovery.js").then((m) => m.rewardCollections),
+  glucosio: () => import("./views/glucose.js").then((m) => m.glucose),
   percorso: () => import("./views/journey.js").then((m) => m.dashboard),
   giardino: () => import("./views/journey.js").then((m) => m.garden),
   progressi: () => import("./views/journey.js").then((m) => m.progress),
