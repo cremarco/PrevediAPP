@@ -1,6 +1,6 @@
 # Manutenzione di PREVEDIApp
 
-Refactoring ed estensione del prototipo del 5 ottobre 2026, con correzioni dell’interfaccia, recupero dati e completamento delle pagine Stitch del 6 ottobre. JavaScript nativo a moduli; HTML, Tailwind 4 e componenti daisyUI 5 con tema Terra e Heroicons.
+Refactoring ed estensione del prototipo del 5 ottobre 2026, con correzioni dell’interfaccia, recupero dati, completamento delle pagine Stitch e widget delle azioni del 6 ottobre. JavaScript nativo a moduli; HTML, Tailwind 4 e componenti daisyUI 5 con tema Terra e Heroicons.
 
 ## Dove intervenire
 
@@ -13,6 +13,8 @@ Refactoring ed estensione del prototipo del 5 ottobre 2026, con correzioni dell�
 | `assets/js/router.js` | Validazione delle route e caricamento su richiesta delle schermate |
 | `assets/js/views/` | Renderer delle aree originali e moduli di esplorazione alimenti, contenuti guidati, social, foresta e glucosio |
 | `assets/js/ui/components.js` | Helper HTML condivisi con struttura daisyUI nativa |
+| `assets/js/ui/nutrition-widgets.js` | Settori del piatto, picker, mercato e ripiani daisyUI |
+| `assets/js/ui/food-art.js` | Mappa dei nove ingredienti nell’atlante raster, presentati in `avatar` |
 | `assets/js/ui/dialogs.js` | Registrazione, modifica e riepilogo di ripristino con dialogo nativo |
 | `assets/js/records.js` | Validazione di date/voci, modifica atomica, rimozione/annullamento e messaggi locali |
 | `assets/js/insights.js` | Report 7/30 giorni, riepilogo quiz, tappe e piatto dalla dispensa |
@@ -25,6 +27,7 @@ Refactoring ed estensione del prototipo del 5 ottobre 2026, con correzioni dell�
 | `assets/js/social-catalog.js` | Gruppi, filtri e progressi delle sfide a partire dal diario |
 | `assets/js/glucose.js` | Validazione, normalizzazione, periodi e CSV delle misurazioni manuali |
 | `assets/js/breathing.js` | Fasi, Web Animation, pausa, visibilità e preferenze di movimento |
+| `assets/js/widget-motion.js` | Trasferimenti e conferme brevi, cancellazione su render, scroll e preferenze di movimento |
 | `assets/js/conversation.js` | Invio, risposta differita e cancellazione delle operazioni Pigna |
 | `assets/js/export.js` | CSV, Blob e download |
 | `assets/data.js` | Dati del prodotto, schema v1 e regole di punti, ricompense, piatto e test |
@@ -61,7 +64,7 @@ npm run build
 
 `npm run format` formatta JavaScript, script e test con Prettier. Le versioni di esbuild e Prettier sono fissate in `package.json`; `package-lock.json` rende riproducibili le dipendenze. GitHub Actions verifica formato, sintassi, test e build prima della pubblicazione.
 
-Il comando `check` verifica ricorsivamente la sintassi dei moduli. I 98 test coprono le regole del prodotto, compatibilità e guasti dello storage, protezione del raw, preflight e sostituzione atomica, sessioni quiz per categoria e rami del test, callback del timer, risposte tardive della chat, route non valide, ripetizione di un caricamento fallito, rendering di tutte le schermate, diario, annullamento, report, tappe, ripristino ed esportazione CSV, cataloghi alimenti/ricette, sfide, contenuti guidati e registro manuale del glucosio.
+Il comando `check` verifica ricorsivamente la sintassi dei moduli. I 113 test coprono le regole del prodotto, compatibilità e guasti dello storage, protezione del raw, preflight e sostituzione atomica, sessioni quiz per categoria e rami del test, callback del timer, risposte tardive della chat, route non valide, ripetizione di un caricamento fallito, rendering di tutte le schermate, diario, annullamento, report, tappe, ripristino ed esportazione CSV, cataloghi alimenti/ricette, sfide, contenuti guidati e registro manuale del glucosio. I controlli dei widget includono indici delle porzioni duplicate, gruppi in eccesso rimovibili, filtri e limiti del piatto, ripiani ed extra conservati, cancellazione delle copie animate al render e allo scroll, movimento ridotto, visibilità e confini dei quattro tempi del respiro.
 
 Per aggiungere una schermata:
 
@@ -157,8 +160,24 @@ Le collezioni Natura/Inverno contengono nove ricompense; i tre costi precedenti 
 
 ### Verifica e continuità del sistema
 
-I controlli del builder coprono 98 test. La matrice browser finale contiene 170 catture native: 55 varianti a 320 × 740, 390 × 844 e 1440 × 1000, più cinque viste a 2723 × 1210. Le 165 misure route/larghezza non rilevano overflow, immagini rotte o icone di fallback. I flussi di ricerca/pasto, preferite/dispensa, gioco, movimento/diario, routine/notifiche, pause, gruppi/sfide e glucosio sono stati provati con dati sintetici in un’origine separata dalle anteprime dell’utente.
+Per questa build dell’estensione Stitch, precedente ai widget, i controlli del builder coprivano 98 test. La matrice browser finale contiene 170 catture native: 55 varianti a 320 × 740, 390 × 844 e 1440 × 1000, più cinque viste a 2723 × 1210. Le 165 misure route/larghezza non rilevano overflow, immagini rotte o icone di fallback. I flussi di ricerca/pasto, preferite/dispensa, gioco, movimento/diario, routine/notifiche, pause, gruppi/sfide e glucosio sono stati provati con dati sintetici in un’origine separata dalle anteprime dell’utente.
 
 Il verdetto finale chiude i due rilievi materiali della revisione: bozza e focus del profilo preservati al completamento della pausa, con una sola voce Pace Interiore da 10 minuti nel diario, e tutti i sei nuovi selettori delle ricompense leggibili a 320/1440 px, con Sciarpa invernale applicata. La prova del completamento usa il timer compilato di produzione e una fixture nativa con avanzamento controllato di `Date.now` tramite F8: verifica l’evento, senza dichiarare un’attesa reale di dieci minuti. Il verdetto riguarda questi due casi e le catture fornite, senza una nuova ricerca generale di difetti.
 
 La verifica indipendente conferma 37 famiglie rappresentate e 55 varianti raggiungibili; nessuna famiglia di pagine manca. Il confronto con i token in `src/styles.css`, gli helper condivisi e i renderer conferma palette Terra, Literata/Nunito Sans, componenti daisyUI nativi e Heroicons. Questa è un’estensione dell’identità esistente: `DESIGN.md` e `.impeccable/design.json` sono conservati, senza migrazioni del sistema o correzioni di deriva preesistente. Rapporti e catture in `.impeccable/review/stitch-coverage/` sono artefatti di sviluppo esclusi dalla distribuzione; i conteggi e le misure delle sezioni precedenti rimangono storici.
+
+## Widget delle azioni
+
+L’estensione riguarda `#piatto`, `#frigo`, `#stress` e `#frigo-sano`; restano 41 route nominali e 55 varianti indirizzabili. `nutrition-widgets.js` mantiene gli indici dell’array denso del piatto anche quando una stessa porzione compare due volte. I settori liberi filtrano gli ingredienti e portano il focus al primo controllo del gruppo; la quarta porzione porta a Verifica. Il modello ammette una composizione errata per il gioco educativo, la mostra per intero e richiede una verifica esplicita prima del diario. Il filtro è solo `ui.plate.target`, con valore iniziale `null`; chiave `prevediapp.v1`, schema v1, regole del diario e punti restano compatibili.
+
+Il mercato e i ripiani condividono i nove ingredienti illustrati; aggiunta e rimozione mantengono `state.fridge`, mentre `pantryExtras` rimane separato e disponibile. «Usa la mia dispensa» richiede la presenza dei tre gruppi e compone quattro porzioni con le regole esistenti. Sotto 360 px, picker, mercato e ripiani dispongono gli ingredienti su due colonne; dalla soglia usano tre colonne. Le cinque `step` del gioco possono ridursi nella card con `min-w-0`. Frigo Sano conserva cinque scelte, tre tentativi, trenta secondi e nessun premio o storico permanente.
+
+Il controller aggiorna stato e focus prima di attendere qualunque feedback. `widget-motion.js` crea soltanto una copia decorativa, `aria-hidden`, `inert` e senza eventi puntatore: 380 ms di trasferimento e 230 ms di conferma. Il render, lo scroll catturato anche dai contenitori, la scheda nascosta e l’attivazione del movimento ridotto annullano animazioni e copie; origine o destinazione fuori vista evitano il volo. Questo include lo scorrimento causato dal focus, senza ritardarlo.
+
+Il respiro mantiene una sola Web Animation di otto secondi, con metà Inspira e metà Espira, sincronizzata ai millisecondi del timer. Fase annunciata, quattro `steps`, tempo rimanente e `radial-progress` dell’intera pausa hanno ruoli separati. La pausa conserva la posizione; visibilità e fuori vista fermano soltanto il movimento, che al ritorno si riallinea al timer. Toggle e preferenza del dispositivo consentono la guida statica con testi, tempi e progresso disponibili; con movimento ridotto il toggle è disabilitato e spiegato.
+
+Il confronto documentale fra `DESIGN.md`, il tema in `src/styles.css`, gli helper condivisi e i nuovi renderer conferma l’estensione Terra: Literata/Nunito Sans, colori e raggi esistenti, parti native daisyUI e Heroicons outline. `DESIGN.md` e `.impeccable/design.json` sono conservati; la deriva preesistente segnalata del sidecar non è riparata da questa estensione. I due WebP dei widget pesano 501.298 byte complessivi; il sito riusa l’atlante e non carica i PNG master. Comportamenti, prompt esatto e manifest sono in [WIDGETS.md](WIDGETS.md).
+
+Formato, controlli, 113 test e build sono passati. La matrice confermata contiene 16 osservazioni delle quattro route a 320 × 740, 390 × 844, 1440 × 1000 e 1280 × 720; `confirmed/metrics.json` non rileva overflow del documento o immagini rotte in nessun caso. I flussi nativi nell’origine QA isolata verificano filtro e focus, selezione, rimozione, riuso della dispensa e pausa statica. La revisione iniziale ha richiesto tre correzioni mirate: parole intere nei controlli mobili, contenimento dei cinque steps e annullamento dei voli dopo lo scroll. `finish-verdict.md` le chiude tutte come `resolved`, con disposizione `ship` limitata a quella lista. Il gioco completo a 320 px mantiene le cinque tappe fra x41 e x278,98 con documento largo 320 px; la cancellazione su scroll è confermata dal codice e dal test unitario, con durate 380/230 ms invariate nel caso normale.
+
+Un solo detector ha restituito `[]`; il controllo di provenienza fornito copre 28 raster senza provenienze mancanti. Rapporti e catture restano in `.impeccable/review/action-widgets/`, esclusi dalla distribuzione. Screenshot, unit test e flussi verificano i casi esaminati; non certificano tutta la fluidità reale, accessibilità completa o prestazioni su dispositivi reali. Il verdetto non avvia una nuova ricerca generale di difetti e non ricalcola il punteggio della critica precedente.

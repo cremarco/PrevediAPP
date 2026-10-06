@@ -12,8 +12,13 @@ export function breathingState(timer) {
   const phaseSeconds = Math.ceil(
     (BREATH_CYCLE_MS / 2 - (elapsedMs % (BREATH_CYCLE_MS / 2))) / 1000,
   );
+  const phaseStep =
+    timer.started || timer.running
+      ? Math.floor((elapsedMs % (BREATH_CYCLE_MS / 2)) / 1000) + 1
+      : 0;
   return {
     elapsedMs,
+    phaseStep,
     progress: Math.round((elapsedMs / (timer.duration * 1000)) * 1000) / 10,
     remaining: Math.ceil((timer.duration * 1000 - elapsedMs) / 1000),
     phase: timer.running
@@ -49,6 +54,16 @@ export function createBreathingMotion({
     reduced: mediaQuery.matches,
   });
 
+  const writeText = (selector, value) => {
+    const node = document.querySelector(selector);
+    if (node && node.textContent !== value) node.textContent = value;
+  };
+
+  const writeAttribute = (node, name, value) => {
+    if (node.getAttribute(name) !== String(value))
+      node.setAttribute(name, value);
+  };
+
   function clear() {
     mountVersion++;
     animation?.cancel();
@@ -60,18 +75,38 @@ export function createBreathingMotion({
 
   function update(timer = getSnapshot()) {
     const state = breathingState(timer);
-    const phase = document.querySelector("#breathing-phase");
-    const cue = document.querySelector("#breathing-cue");
-    if (phase && phase.textContent !== state.phase)
-      phase.textContent = state.phase;
-    if (cue) cue.textContent = state.cue;
+    writeText("#breathing-phase", state.phase);
+    writeText("#breathing-cue", state.cue);
+    writeText(
+      "#breathing-phase-step",
+      state.phaseStep
+        ? `Tempo ${state.phaseStep} di 4${timer.running ? "" : " · in pausa"}`
+        : "Quattro tempi per ogni fase",
+    );
+    for (let step = 1; step <= 4; step++) {
+      const node = document.querySelector(`#breathing-step-${step}`);
+      if (!node) continue;
+      writeAttribute(
+        node,
+        "class",
+        `step min-w-0${state.phaseStep >= step ? " step-primary" : ""}`,
+      );
+      if (state.phaseStep === step)
+        writeAttribute(node, "aria-current", "step");
+      else if (node.getAttribute("aria-current") !== null)
+        node.removeAttribute("aria-current");
+    }
     const progress = document.querySelector("#breathing-progress");
     if (progress) {
-      progress.style.setProperty("--value", state.progress);
-      progress.setAttribute("aria-valuenow", state.progress);
-      progress.setAttribute("aria-valuetext", `${state.progress}% della pausa`);
-      document.querySelector("#breathing-progress-text").textContent =
-        `${state.progress}%`;
+      if (progress.style.getPropertyValue("--value") !== String(state.progress))
+        progress.style.setProperty("--value", state.progress);
+      writeAttribute(progress, "aria-valuenow", state.progress);
+      writeAttribute(
+        progress,
+        "aria-valuetext",
+        `${state.progress}% della pausa`,
+      );
+      writeText("#breathing-progress-text", `${state.progress}%`);
     }
     const toggle = document.querySelector("#breathing-motion");
     if (toggle) {
@@ -93,7 +128,7 @@ export function createBreathingMotion({
       animation = core.animate(
         [
           {
-            transform: "scale(0.8)",
+            transform: "scale(0.72)",
             opacity: 0.85,
             offset: 0,
             easing: "ease-in-out",
@@ -104,7 +139,7 @@ export function createBreathingMotion({
             offset: 0.5,
             easing: "ease-in-out",
           },
-          { transform: "scale(0.8)", opacity: 0.85, offset: 1 },
+          { transform: "scale(0.72)", opacity: 0.85, offset: 1 },
         ],
         {
           duration: BREATH_CYCLE_MS,

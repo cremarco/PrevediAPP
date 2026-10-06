@@ -176,7 +176,7 @@ export const initialSession = () => {
     forest: { theme: "all" },
     learning: { category: "all" },
     glucose: { period: 7, editing: "" },
-    plate: { items: [], message: "", meal: "Pranzo" },
+    plate: { items: [], message: "", meal: "Pranzo", target: null },
     progress: { category: "movement", period: 7 },
     community: { editing: "", draft: "" },
     quiz,

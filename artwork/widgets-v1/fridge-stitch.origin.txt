@@ -1,0 +1,6 @@
+Source: user-owned Stitch project https://stitch.withgoogle.com/projects/4965067135037654911
+Original export archive: /Users/marco/Downloads/stitch_percorso_benessere_prediabete.zip
+Original ZIP entry: stitch_percorso_benessere_prediabete/an_empty_clean_and_modern_refrigerator_interior_front_view_specifically/screen.png
+Mode: source asset reused without raster editing or AI generation in this task.
+Asset description: original clean refrigerator interior, frontal, open olive-green doors, white/grey shelves and drawers, small TERRA branding. Not an interface screenshot; no medical claims or external watermark visible.
+SHA256: 3915df6bf545472680c37eaae2d1f495f1ab1a919bc6b533e6966f89281e8723

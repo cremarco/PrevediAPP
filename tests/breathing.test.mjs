@@ -5,6 +5,7 @@ import {
   breathingState,
   createBreathingMotion,
 } from "../assets/js/breathing.js";
+import { stress } from "../assets/js/views/wellness.js";
 
 function timerClock(options = {}) {
   let now = 0,
@@ -73,6 +74,11 @@ function motionHarness() {
     [
       "#breathing-phase",
       "#breathing-cue",
+      "#breathing-phase-step",
+      "#breathing-step-1",
+      "#breathing-step-2",
+      "#breathing-step-3",
+      "#breathing-step-4",
       "#breathing-progress",
       "#breathing-progress-text",
       "#breathing-motion",
@@ -192,6 +198,43 @@ test("Breathing instructions change at the exact inhalation and cycle boundaries
   }
 });
 
+test("The four breath beats restart for each half-cycle and preserve a fractional pause", () => {
+  for (const [elapsedMs, phaseStep] of [
+    [0, 1],
+    [999, 1],
+    [1000, 2],
+    [3999, 4],
+    [4000, 1],
+    [7999, 4],
+    [8000, 1],
+  ]) {
+    assert.equal(
+      breathingState({ duration: 60, elapsedMs, started: true, running: true })
+        .phaseStep,
+      phaseStep,
+      `${elapsedMs} ms`,
+    );
+  }
+  assert.equal(
+    breathingState({
+      duration: 60,
+      elapsedMs: 0,
+      started: false,
+      running: false,
+    }).phaseStep,
+    0,
+  );
+  const paused = breathingState({
+    duration: 180,
+    elapsedMs: 5250,
+    started: true,
+    running: false,
+  });
+  assert.equal(paused.phaseStep, 2);
+  assert.equal(paused.phase, "In pausa");
+  assert.equal(paused.progress, 2.9);
+});
+
 test("Snapshots seek between ticks and remain read-only after the deadline", () => {
   const completions = [];
   const clock = timerClock({ onComplete: (value) => completions.push(value) });
@@ -257,6 +300,82 @@ test("Motion pauses at the timer position and resumes without losing its phase",
   h.motion.update();
   assert.equal(animation.currentTime, 250);
   assert.equal(h.nodes.get("#breathing-phase").textContent, "Inspira");
+});
+
+test("The accessible beat markers follow the timer even with motion switched off", () => {
+  const h = motionHarness();
+  h.motion.setEnabled(false);
+  h.setSnapshot({ elapsedMs: 3999 });
+  h.motion.mount();
+  assert.equal(h.animations.length, 0);
+  assert.equal(
+    h.nodes.get("#breathing-step-4").getAttribute("aria-current"),
+    "step",
+  );
+  assert.equal(
+    h.nodes.get("#breathing-phase-step").textContent,
+    "Tempo 4 di 4",
+  );
+  h.setSnapshot({ elapsedMs: 4000 });
+  h.motion.update();
+  assert.equal(
+    h.nodes.get("#breathing-step-4").getAttribute("aria-current"),
+    null,
+  );
+  assert.equal(
+    h.nodes.get("#breathing-step-4").getAttribute("class"),
+    "step min-w-0",
+  );
+  assert.equal(
+    h.nodes.get("#breathing-step-1").getAttribute("aria-current"),
+    "step",
+  );
+  assert.equal(h.nodes.get("#breathing-phase").textContent, "Espira");
+  assert.equal(h.nodes.get("#breathing-progress-text").textContent, "6.7%");
+  h.setSnapshot({ elapsedMs: 5250, running: false });
+  h.motion.update();
+  assert.equal(
+    h.nodes.get("#breathing-step-2").getAttribute("aria-current"),
+    "step",
+  );
+  assert.equal(
+    h.nodes.get("#breathing-phase-step").textContent,
+    "Tempo 2 di 4 · in pausa",
+  );
+  h.setSnapshot({ elapsedMs: 0, started: false });
+  h.motion.update();
+  assert.equal(
+    h.nodes.get("#breathing-phase-step").textContent,
+    "Quattro tempi per ogni fase",
+  );
+  for (let step = 1; step <= 4; step++)
+    assert.equal(
+      h.nodes.get(`#breathing-step-${step}`).getAttribute("aria-current"),
+      null,
+    );
+});
+
+test("The breathing widget separates session progress from a quiet four-beat guide", () => {
+  const html = stress({
+    timer: {
+      duration: 60,
+      elapsedMs: 2500,
+      remaining: 58,
+      running: true,
+      started: true,
+    },
+    breathing: { enabled: false, reduced: true },
+  });
+  assert.match(html, /Pausa completata <span[^>]+id="breathing-progress-text"/);
+  assert.match(html, /aria-label="Avanzamento della pausa"/);
+  assert.match(html, /id="breathing-phase"[^>]+aria-live="polite"/);
+  assert.match(html, /id="timer-time"[^>]+aria-live="off"/);
+  assert.match(html, /id="breathing-step-3"[^>]+aria-current="step"/);
+  assert.equal((html.match(/data-breathing-step="/g) ?? []).length, 4);
+  assert.equal((html.match(/aria-live="polite"/g) ?? []).length, 1);
+  assert.match(html, /4 s inspira · 4 s espira/);
+  assert.match(html, /Tempo 3 di 4/);
+  assert.match(html, /Movimento ridotto attivo sul dispositivo/);
 });
 
 test("Reduced motion and the motion switch cancel movement while preserving instructions", () => {

@@ -35,6 +35,7 @@ import {
 } from "./session.js";
 import { createTimer, formatTime } from "./timer.js";
 import { createBreathingMotion } from "./breathing.js";
+import { createWidgetMotion } from "./widget-motion.js";
 import { createConversation } from "./conversation.js";
 import { resolveRoute, createScreenLoader } from "./router.js";
 import { diaryCSV, download } from "./export.js";
@@ -303,6 +304,7 @@ function render(focus = false) {
   chrome();
   chatResizeObserver?.disconnect();
   breathingMotion.clear();
+  widgetMotion.clear();
   elements.main.innerHTML = renderer({
     state: store.state,
     ui,
@@ -529,6 +531,10 @@ const breathingMotion = createBreathingMotion({
       ? (callback) => new IntersectionObserver(callback, { threshold: 0.15 })
       : null,
 });
+const widgetMotion = createWidgetMotion({
+  document,
+  mediaQuery: window.matchMedia("(prefers-reduced-motion: reduce)"),
+});
 const guidedTimers = new Map(
   meditations.map((session) => {
     const duration = session.minutes * 60;
@@ -579,6 +585,8 @@ const fridgeTimer = createTimer({
     if (view !== "frigo-sano") return;
     const time = $("#fridge-game-time");
     if (time) time.textContent = formatTime(snapshot.remaining);
+    const progress = $("#fridge-game-progress");
+    if (progress) progress.value = snapshot.remaining;
   },
   onComplete() {
     const game = ui.discovery.fridgeGame;
@@ -686,21 +694,41 @@ const actions = {
     }
   },
   "plate-add": (el) => {
-    if (ui.plate.items.length < 4) {
+    if (
+      ui.plate.items.length < 4 &&
+      foods.some((food) => food.id === el.dataset.id)
+    ) {
+      const origin = widgetMotion.capture(el);
+      const index = ui.plate.items.length;
       ui.plate.items.push(el.dataset.id);
       ui.plate.message = "";
       render();
+      widgetMotion.transfer(
+        origin,
+        `[data-plate-slot][data-item-index="${index}"] [data-food-art]`,
+      );
       if (ui.plate.items.length === 4) focusStep("[data-action=plate-check]");
     }
   },
+  "plate-target": (el) => {
+    const group = el.dataset.group;
+    if (!["all", "vegetables", "carbs", "protein"].includes(group)) return;
+    ui.plate.target = group === "all" ? null : group;
+    render();
+    focusStep("#plate-foods-target [data-action=plate-add]:not(:disabled)");
+  },
   "plate-remove": (el) => {
-    ui.plate.items.splice(Number(el.dataset.index), 1);
+    const index = Number(el.dataset.index);
+    if (!Number.isInteger(index) || index < 0 || index >= ui.plate.items.length)
+      return;
+    ui.plate.items.splice(index, 1);
     ui.plate.message = "";
     render();
   },
   "plate-reset": () => {
     ui.plate.items = [];
     ui.plate.message = "";
+    ui.plate.target = null;
     render();
   },
   "plate-check": () => {
@@ -708,6 +736,7 @@ const actions = {
       ? "Il tuo piatto segue il modello: due porzioni di verdure, una di carboidrati e una di proteine."
       : "Manca un po’ di equilibrio: prova due porzioni di verdure, una di carboidrati e una di proteine. Rimuovi un ingrediente e riprova.";
     render();
+    widgetMotion.pulse("[data-plate-feedback]");
   },
   "plate-save": () => {
     if (!plateBalance(ui.plate.items).balanced) return;
@@ -721,17 +750,28 @@ const actions = {
     persist();
     ui.plate.items = [];
     ui.plate.message = "";
+    ui.plate.target = null;
     location.hash = "alimentazione";
     toast("Piatto aggiunto al diario. Alberello ti ringrazia!");
   },
   "fridge-toggle": (el) => {
     const id = el.dataset.id;
     if (!foods.some((food) => food.id === id)) return;
-    store.state.fridge = store.state.fridge.includes(id)
+    const removing = store.state.fridge.includes(id);
+    const origin = widgetMotion.capture(
+      removing ? $(`[data-fridge-item="${id}"]`) || el : el,
+    );
+    store.state.fridge = removing
       ? store.state.fridge.filter((x) => x !== id)
       : [...store.state.fridge, id];
     persist();
     render();
+    widgetMotion.transfer(
+      origin,
+      removing
+        ? `[data-market-food="${id}"] [data-food-art]`
+        : `[data-fridge-item="${id}"] [data-food-art]`,
+    );
   },
   "recipe-favorite": (el) => {
     if (!recipes.some((recipe) => recipe.id === el.dataset.id)) return;
@@ -827,9 +867,11 @@ const actions = {
     render();
   },
   "timer-toggle": () => {
+    const firstStart = !timer.snapshot().started;
     if (!timer.snapshot().running) pauseHealthTimers(timer);
     timer.toggle();
     render();
+    if (firstStart && timer.snapshot().running) focusStep("#breathing-phase");
   },
   "timer-reset": () => {
     timer.reset();
@@ -857,9 +899,17 @@ const actions = {
     focusStep("#fridge-question");
   },
   "fridge-game-answer": (el) => {
+    const origin = widgetMotion.capture(el);
+    const index = ui.discovery.fridgeGame.correct;
     if (!answerFridgeGame(ui.discovery.fridgeGame, el.dataset.id)) return;
     if (ui.discovery.fridgeGame.finished) fridgeTimer.reset(30);
     render();
+    if (ui.discovery.fridgeGame.correct > index)
+      widgetMotion.transfer(
+        origin,
+        `[data-fridge-game-pick="${index}"] [data-food-art]`,
+      );
+    else widgetMotion.pulse("[data-fridge-game-feedback]");
     focusStep("#fridge-question");
   },
   "fridge-game-stop": () => {
