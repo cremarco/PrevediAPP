@@ -366,7 +366,10 @@ test("The breathing widget separates session progress from a quiet four-beat gui
     },
     breathing: { enabled: false, reduced: true },
   });
-  assert.match(html, /Pausa completata <span[^>]+id="breathing-progress-text"/);
+  assert.match(
+    html,
+    /Avanzamento della pausa <span[^>]+id="breathing-progress-text"/,
+  );
   assert.match(html, /aria-label="Avanzamento della pausa"/);
   assert.match(html, /id="breathing-phase"[^>]+aria-live="polite"/);
   assert.match(html, /id="timer-time"[^>]+aria-live="off"/);

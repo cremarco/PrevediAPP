@@ -16,13 +16,21 @@ Il layout allinea navbar, contenuto e footer; le griglie si adattano alla larghe
 
 I colori Terra distinguono categorie, selezioni, messaggi personali e ricompense. Bordi dei campi e avvisi sono più leggibili, con etichette e icone indipendenti dal colore. Ruoli, contrasti e verifiche sono in [COLOR-AUDIT.md](COLOR-AUDIT.md).
 
+La revisione di accessibilità estende tastiera e focus a menu, dialoghi e widget; rende distinguibili le azioni ripetute, associa istruzioni ed errori ai campi e conserva le conferme fino alla chiusura. Il testo secondario è più contrastato; Frigo Sano offre anche una modalità senza timer. Il controllo axe di supporto copre 55 varianti a 320 e 1440 px senza violazioni automatiche, con verifiche di contrasto incomplete su immagini e fondi. Ambito e limiti sono in [MAINTENANCE.md](MAINTENANCE.md#accessibilità).
+
 La guida alla respirazione mantiene l’animazione sincronizzata con il timer, conserva la posizione in pausa e offre una modalità statica. Comportamento e fonti sono in [BREATHING-MOTION.md](BREATHING-MOTION.md).
 
 Piatto, dispensa e Frigo Sano usano ingredienti illustrati e azioni native: le porzioni occupano quattro settori, le scelte riempiono i ripiani e un breve movimento conferma il passaggio. Il respiro distingue fase, quattro tempi e progresso della pausa. Comportamenti, modalità statiche e provenienza dei due raster sono in [WIDGETS.md](WIDGETS.md).
 
 Una fronda nei titoli e una pigna nel footer si muovono delicatamente, con il toggle nativo «Pino animato». Il movimento si ferma durante dialoghi e timer, rispetta la preferenza del dispositivo e mantiene gli asset statici come fallback. Comportamento, manutenzione, prompt e prove sono in [PINE-MOTION.md](PINE-MOTION.md).
 
+Risveglio e routine serale accompagnano scelta, preparazione, gesto corrente, pausa, salto e riepilogo. Le pause scritte seguono il tempo trascorso e conservano l’esito; le compilazioni riprendono nella stessa scheda. Ricette, dispensa, storico completo del glucosio e risposte di Pigna offrono azioni collegate al contesto. Comportamenti, prove integrate e limiti sono in [INTERACTIVE-EXPERIENCE.md](INTERACTIVE-EXPERIENCE.md).
+
 Il codice è organizzato in moduli per schermate, stato, navigazione, timer e conversazione. La build minifica il JavaScript e carica le aree su richiesta. Struttura, compatibilità dei salvataggi e misure sono in [MAINTENANCE.md](MAINTENANCE.md).
+
+Le nove immagini delle ricompense condividono il tratto botanico e i colori Terra, con sfondo trasparente. [Asset, originali e prompt esatti](REWARD-ASSETS.md).
+
+Frigo e piatto mostrano immagini per tutti i quindici ingredienti disponibili: nove nell’atlante originale e sei illustrazioni aggiuntive. [Asset degli alimenti e prompt](FOOD-ASSETS.md).
 
 La verifica dell’export completo di Stitch ha identificato 79 schermate HTML con anteprima, riunite in 37 famiglie funzionali. Tutte hanno una destinazione nell’app: varianti, domande e dialoghi condividono le stesse viste quando descrivono lo stesso flusso. Sono state aggiunte 24 route nominali, per 41 route e 55 varianti indirizzabili. La mappa completa e gli adattamenti sono in [STITCH-COVERAGE.md](STITCH-COVERAGE.md). Le sei nuove immagini delle ricompense, di cui due generate con Imagegen, sono documentate in [STITCH-ASSETS.md](STITCH-ASSETS.md).
 
@@ -30,16 +38,16 @@ La verifica dell’export completo di Stitch ha identificato 79 schermate HTML c
 
 - Percorso giornaliero e diario di pasti, movimento, sonno, acqua e pause: modifica delle voci, note, navigazione per giorno e rimozione annullabile.
 - Iniziamo insieme, presentazione di Pigna, quattro quiz con storico e ripresa indipendente per categoria durante la sessione, hub e introduzioni agli argomenti.
-- Ricerca in un catalogo locale di 21 alimenti, ricerche recenti, mercato, dispensa personale, tre ricette con preferite e ingredienti collegati al diario. Due giochi: Crea il piatto e Frigo Sano.
-- Dettaglio e diario del movimento, risveglio muscolare registrabile, routine serale con promemoria nell’app, tre pause guidate scritte con timer da 10, 15 e 5 minuti.
+- Ricerca in un catalogo locale di 21 alimenti, ricerche recenti, mercato, dispensa personale, tre ricette con checklist, preferite e ingredienti collegati al diario. Quindici ingredienti compatibili per il piatto e i ripiani. Due giochi: Crea il piatto e Frigo Sano, anche senza limite di tempo.
+- Dettaglio e diario del movimento, risveglio muscolare con gesti scelti e minuti effettivi registrabili, routine serale manuale con promemoria nell’app, tre pause guidate scritte con spunti legati al timer da 10, 15 e 5 minuti e conclusione visibile.
 - Foglie, livelli, nove ricompense nelle collezioni Natura/Inverno ed evoluzione di Alberello basata sulle attività effettive; progressi per movimento, sonno, acqua e pause a 7 o 30 giorni.
-- Profilo e obiettivi, esportazione JSON/CSV, ripristino JSON con validazione e riepilogo, cancellazione confermata dei dati. Registro manuale del glucosio con modifica, rimozione annullabile, periodo 7/30 giorni e CSV dedicato.
+- Profilo e obiettivi, esportazione JSON/CSV, ripristino JSON con validazione e riepilogo, cancellazione confermata dei dati. Registro manuale del glucosio con modifica, rimozione annullabile, periodi 7/30 giorni o tutte le misurazioni e CSV dedicato.
 - Test educativo del rischio CDC con punteggio e collegamenti alle fonti.
 - Conversazione guidata con Pigna, notifiche giornaliere e community dimostrativa: quattro gruppi, sfide personali basate sul diario, giardino condiviso di esempio e messaggi personali locali modificabili.
 
 I dati restano in `localStorage` su questo browser e dominio. Non c’è sincronizzazione fra dispositivi. Se un salvataggio è illeggibile, l’app protegge il file originale e sospende le modifiche: puoi conservarlo, ripristinare un JSON verificato o scegliere esplicitamente un nuovo percorso. Un errore di accesso ai dati permette invece modifiche temporanee in memoria, da esportare prima di chiudere.
 
-La community contiene esempi e interazioni locali; Pigna usa risposte predefinite su quattro temi, senza un servizio AI. La chat conserva gli ultimi 40 messaggi, comprese le risposte; lo storico quiz gli ultimi 200 tentativi complessivi. Conteggi e migliori risultati dei quiz si riferiscono allo storico conservato. I tentativi incompleti e le risposte del test CDC restano in memoria: ricaricare o chiudere la pagina li interrompe. Respirazione e sessioni guidate condividono un solo timer attivo: avviare una pausa mette in pausa l’altra, conservandone l’avanzamento nella scheda. Timer, partita Frigo Sano e bozze transitorie non vengono ripristinati dopo la ricarica. Le sessioni offrono spunti scritti, senza audio; il promemoria serale appare nelle notifiche dell’app e non invia notifiche push o in background.
+La community contiene esempi e interazioni locali, con capacità di venti messaggi dichiarata prima dell’invio; Pigna usa risposte predefinite su quattro temi e collegamenti alle azioni, senza un servizio AI. La chat conserva gli ultimi 40 messaggi, comprese le risposte; lo storico quiz gli ultimi 200 tentativi complessivi. Conteggi e migliori risultati dei quiz si riferiscono allo storico conservato. Bozze di compilazione, checklist delle ricette, esiti, pratiche e tentativi incompleti restano in memoria nella stessa scheda: ricaricare o chiudere la pagina li interrompe. Avviare o riprendere una pratica benessere sospende le altre, conservandone l’avanzamento nella scheda. Le sessioni offrono spunti scritti, senza audio; la conclusione della routine serale non registra ore di sonno. Il promemoria serale appare nelle notifiche dell’app e non invia notifiche push o in background.
 
 Il registro del glucosio parte vuoto e conserva fino a 200 inserimenti manuali, senza connessione CGM, interpretazione clinica o valori generati. Al limite non elimina le misurazioni precedenti per fare spazio. Le ricette riprendono i tre titoli della fonte; ingredienti e preparazioni sono esempi aggiunti per questa app, con durate indicative. Le ricompense usano un’unica valuta virtuale, le Foglie. Gruppi e sfide non sono servizi sociali o classifiche fra utenti reali.
 
@@ -88,13 +96,15 @@ Modifica gli stili in `src/styles.css` e i moduli in `assets/js/`, poi ricompila
 | `assets/data.js` | Stato, punteggi, quiz e regole del test |
 | `assets/icons.js` | SVG Heroicons incorporati |
 | `src/styles.css` | Tema daisyUI Terra, font, tipografia, focus e riduzione del movimento |
-| `tests/` | 123 test su dominio, storage e recupero, sessioni, timer, widget e movimento, cataloghi, glucosio, route, schermate, ripristino ed export |
+| `tests/` | 182 test su dominio, storage e recupero, sessioni, timer, pratiche, bozze, accessibilità, widget e movimento, cataloghi, glucosio, route, schermate, ripristino ed export |
 | `PRODUCT.md` / `DESIGN.md` | Contesto del prodotto e sistema visivo |
 | `DAISYUI-AUDIT.md` | Componenti ufficiali adottati e controlli eseguiti |
 
 ## Verifica e fonti
 
-123 test automatici coprono le regole del prodotto, compatibilità e guasti dei salvataggi, protezione del file originale, recupero e sostituzione atomici, sessioni indipendenti dei quiz e rami del test educativo, timer, composizione e rimozione delle porzioni, ripiani, feedback animato, confini del respiro e lifecycle del pino, risposte tardive della chat, route, rendering, diario, cataloghi, sfide, registro manuale del glucosio, ripristino ed esportazioni. Formattazione, controlli e build sono parte della pubblicazione.
+182 test automatici coprono le regole del prodotto, compatibilità e guasti dei salvataggi, protezione del file originale, recupero e sostituzione atomici, sessioni indipendenti dei quiz e rami del test educativo, timer e pratiche manuali, ambiti delle bozze, navigazione accessibile, composizione e rimozione delle porzioni, ripiani, feedback animato, confini del respiro e lifecycle del pino, risposte tardive della chat, route, rendering, diario, cataloghi, sfide, registro manuale del glucosio, ripristino ed esportazioni. Formattazione, controlli e build sono parte della pubblicazione.
+
+Il candidato interattivo integrato ha superato formato, 182 test e build. La matrice corrente comprende 134 osservazioni: 55 varianti a 390/1280 px e dodici varianti operative a 320/1440 px, senza overflow, immagini rotte o titoli errati. Prove native e limiti del controllo axe sono in [INTERACTIVE-EXPERIENCE.md](INTERACTIVE-EXPERIENCE.md#manutenzione-prove-e-limiti). I conteggi delle sezioni successive descrivono le rispettive build storiche.
 
 La verifica dell’estensione Stitch comprende 170 catture native: 55 varianti a 320, 390 e 1440 px, più cinque viste a 2723 px. Le 165 misure route/larghezza non rilevano overflow del documento, immagini rotte o icone di fallback. I flussi sono stati provati in un’origine QA separata dai salvataggi delle anteprime dell’utente. Il verdetto finale chiude i due rilievi della revisione: la conclusione della pausa preserva bozza e focus del profilo, e i sei nuovi nomi delle ricompense restano leggibili nel Giardino a 320 e 1440 px. La revisione indipendente controlla sia la copertura della fonte sia la resa dell’interfaccia; ambito, prove e limiti sono descritti in [STITCH-COVERAGE.md](STITCH-COVERAGE.md) e [MAINTENANCE.md](MAINTENANCE.md#completamento-delle-pagine-stitch). Rapporti e catture di sviluppo in `.impeccable/review/` sono esclusi dal repository pubblicato. La verifica è euristica e riguarda le superfici e i casi esaminati; il punteggio della critica precedente non è stato ricalcolato.
 

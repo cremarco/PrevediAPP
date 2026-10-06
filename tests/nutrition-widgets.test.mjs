@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { initialState, plateBalance } from "../assets/data.js";
+import { plateFoods } from "../assets/js/nutrition-catalog.js";
 import {
   plateSlots,
   plateBoard,
@@ -66,13 +67,16 @@ test("Empty plate sectors filter the three groups; a full plate exposes only rem
 
 test("Ingredient filters preserve repeated choices and disable adding a fifth portion", () => {
   const all = ingredientPicker([], null);
-  assert.equal((all.match(/data-action="plate-add"/g) || []).length, 9);
+  assert.equal(
+    (all.match(/data-action="plate-add"/g) || []).length,
+    plateFoods.length,
+  );
   const protein = ingredientPicker([], "protein");
-  assert.equal((protein.match(/data-action="plate-add"/g) || []).length, 3);
+  assert.equal((protein.match(/data-action="plate-add"/g) || []).length, 5);
   assert.match(protein, /data-id="salmone"/);
   assert.doesNotMatch(protein, /data-id="broccoli"/);
   const full = ingredientPicker(["broccoli", "broccoli", "pane", "tofu"]);
-  assert.equal((full.match(/ disabled>/g) || []).length, 9);
+  assert.equal((full.match(/ disabled>/g) || []).length, plateFoods.length);
   assert.match(full, /2 porzioni già scelte/);
   assert.match(all, /id="plate-foods-target"/);
 });
@@ -85,7 +89,10 @@ test("Fridge shelves expose only selected ingredients and preserve independent m
   assert.equal((shelves.match(/data-fridge-item=/g) || []).length, 3);
   assert.match(shelves, /data-fridge-item="tofu"/);
   assert.doesNotMatch(shelves, /data-fridge-item="salmone"/);
-  assert.equal((market.match(/data-market-food=/g) || []).length, 9);
+  assert.equal(
+    (market.match(/data-market-food=/g) || []).length,
+    plateFoods.length,
+  );
   assert.equal((market.match(/aria-pressed="true"/g) || []).length, 3);
   assert.match(fridgeShelves([]), /Questo ripiano aspetta i tuoi ingredienti/);
   assert.deepEqual(items, ["broccoli", "quinoa", "tofu"]);
@@ -94,7 +101,7 @@ test("Fridge shelves expose only selected ingredients and preserve independent m
 test("Widget views keep incomplete checks and pantry suggestions disabled and retain extra ingredients", () => {
   const state = initialState();
   state.fridge = [];
-  state.pantryExtras = ["ceci", "carote"];
+  state.pantryExtras = ["ceci", "carote", "mela-rossa"];
   const before = JSON.stringify(state);
   const pantry = fridge({ state });
   assert.match(pantry, /data-action="pantry-plate" disabled/);

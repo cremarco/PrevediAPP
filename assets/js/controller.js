@@ -2,13 +2,13 @@ import {
   KEY,
   localDate,
   foods,
+  rewards,
   quizSets,
   dayEntries,
   totalPoints,
   award,
   addEntry,
   claimReward,
-  plateBalance,
   riskScore,
 } from "../data.js";
 import {
@@ -38,6 +38,14 @@ import { createBreathingMotion } from "./breathing.js";
 import { createWidgetMotion } from "./widget-motion.js";
 import { createPineMotion } from "./pine-motion.js";
 import { createConversation } from "./conversation.js";
+import { createFormDrafts } from "./form-drafts.js";
+import { createAnnouncer, createDrawerNavigation } from "./accessibility.js";
+import {
+  createPracticeActions,
+  pauseSummary,
+  recordPause,
+} from "./practice-runtime.js";
+import { guidedStage } from "./guided-flow.js";
 import { resolveRoute, createScreenLoader } from "./router.js";
 import { diaryCSV, download } from "./export.js";
 import {
@@ -57,15 +65,17 @@ import {
   recipeById,
   initialFridgeGame,
   answerFridgeGame,
+  plateFoods,
+  foodById,
+  catalogPlateBalance as plateBalance,
+  toggleRecipeStep,
+  recipePantryFoods,
 } from "./nutrition-catalog.js";
 import {
   exercises,
   sleepRoutine,
   meditations,
   safeSession,
-  validExerciseIds,
-  exerciseLabel,
-  validExerciseMinutes,
   validRoutineIds,
 } from "./guided-content.js";
 import { groups, groupCategories, challenges } from "./social-catalog.js";
@@ -87,6 +97,7 @@ const elements = {
   dialogContent: $("#dialog-content"),
   drawer: $("#app-drawer"),
   drawerTrigger: $("[data-drawer-trigger]"),
+  navigationPanel: $("#navigation-panel"),
   breadcrumb: $("#breadcrumb"),
   date: $("#header-date"),
   headerInitial: $("#header-initial"),
@@ -101,9 +112,29 @@ const elements = {
   toastMessage: $("#toast-message"),
   toastUndo: $("#toast-undo"),
   toastDay: $("#toast-day"),
+  toastExport: $("#toast-export"),
+  status: $("#app-status"),
 };
+const announce = createAnnouncer(elements.status);
+const drawerNavigation = createDrawerNavigation({
+  document,
+  drawer: elements.drawer,
+  trigger: elements.drawerTrigger,
+  panel: elements.navigationPanel,
+  content: $(".drawer-content"),
+  dock: elements.mobileNav,
+  toast: elements.toast,
+  mediaQuery: window.matchMedia("(min-width: 64rem)"),
+});
 const store = createStore(() => localStorage);
 const ui = initialSession();
+const formDrafts = createFormDrafts();
+let renderedFormScope = "";
+let entryDraftScope = "";
+let entryDraftContext = "";
+let pendingDiaryEntryId = "";
+let suppressDraftCapture = false;
+const discardedForms = [];
 const loadScreen = createScreenLoader();
 const headerFormatter = new Intl.DateTimeFormat("it-IT", {
   weekday: "long",
@@ -115,11 +146,21 @@ let view = "percorso";
 let renderer;
 let navigationVersion = 0;
 let chromeRoute, chromeName, chromeDay;
-let toastTimeout;
+let dialogReturnFocus;
 let chatResizeObserver;
 let undoAction;
 let pendingBackup;
 let backupVersion = 0;
+const formErrorIds = {
+  "entry-form": "entry-error",
+  "risk-form": "risk-error",
+  "profile-form": "profile-error",
+  "community-form": "community-error",
+  "glucose-form": "glucose-error",
+};
+const validatedForms = Object.keys(formErrorIds)
+  .map((id) => `#${id}`)
+  .join(",");
 
 function storageBanner() {
   elements.storageNotice.hidden = !store.problem;
@@ -133,26 +174,59 @@ function persist() {
   return saved;
 }
 function toast(message, undo = null) {
-  clearTimeout(toastTimeout);
+  const active = document.activeElement;
   undoAction = undo;
   elements.toastDay.hidden = true;
+  elements.toastExport.hidden = !store.problem || store.recoveryRequired;
   elements.toastUndo.hidden = !undo;
   elements.toastMessage.textContent = message;
   elements.toast.hidden = false;
-  toastTimeout = setTimeout(
-    () => {
-      elements.toast.hidden = true;
-      undoAction = null;
-    },
-    undo ? 12000 : 4500,
-  );
+  if (active && elements.toast.contains(active) && active.hidden)
+    elements.toast
+      .querySelector('[data-action="close-toast"]')
+      .focus({ preventScroll: true });
+  announce(() => elements.toastMessage.textContent);
+}
+function formScope() {
+  if (view === "glucosio") return `glucose:${ui.glucose.editing || "new"}`;
+  if (view === "community") return `community:${ui.community.editing || "new"}`;
+  if (view === "rischio") return `risk:${ui.risk.step}`;
+  return view;
+}
+function capturePageDrafts() {
+  if (!suppressDraftCapture && renderedFormScope)
+    formDrafts.capture(elements.main, renderedFormScope);
+  for (const [scope, id] of discardedForms) formDrafts.clear(scope, id);
+  discardedForms.length = 0;
+}
+function forgetForm(id) {
+  discardedForms.push([renderedFormScope, id]);
+  formDrafts.clear(renderedFormScope, id);
+}
+function forgetAllDrafts() {
+  formDrafts.clear();
+  discardedForms.length = 0;
+  suppressDraftCapture = true;
+  entryDraftScope = "";
+}
+function showSavedDay(date, entryId = "") {
+  elements.toastDay.dataset.date = date;
+  elements.toastDay.dataset.entryId = entryId;
+  elements.toastDay.textContent = "Vedi nel diario";
+  elements.toastDay.hidden = false;
 }
 function navLink([id, symbol, label], mobile = false) {
   const parent =
     view === "quiz" ? ui.quiz.category : routeParents[view] || view;
+  const hasDirectLink = [
+    ...mainNav,
+    ...exploreNav,
+    ...wellnessNav,
+    ...communityNav,
+  ].some(([route]) => route === view);
   const active =
     view === id ||
-    parent === id ||
+    (parent === id && (mobile || !hasDirectLink)) ||
     (mobile &&
       id === "percorso" &&
       !["giardino", "assistente", "community", "profilo"].includes(parent));
@@ -160,7 +234,7 @@ function navLink([id, symbol, label], mobile = false) {
     ? `aria-current="${view === id ? "page" : "location"}"`
     : "";
   return mobile
-    ? `<button class="${active ? "dock-active text-primary" : ""}" data-action="navigate" data-route="${id}" ${current}>${icon(symbol)}<span class="dock-label">${label}</span></button>`
+    ? `<a href="#${id}" class="${active ? "dock-active text-primary" : ""}" ${current}>${icon(symbol)}<span class="dock-label">${label}</span></a>`
     : `<li><a href="#${id}" class="min-h-11 ${active ? "menu-active bg-primary text-primary-content" : ""}" ${current}>${icon(symbol)}${label}</a></li>`;
 }
 function exploreMenu() {
@@ -182,7 +256,7 @@ function chrome() {
             ? `sessione/${ui.guided.sessionId}`
             : view;
   if (chromeRoute !== routeKey) {
-    elements.desktopNav.innerHTML = `<ul class="menu w-full gap-1 px-0">${mainNav.map((x) => navLink(x)).join("")}${exploreMenu()}<li class="menu-title mt-3 text-base-content/85">Il tuo benessere</li>${wellnessNav.map((x) => navLink(x)).join("")}<li class="menu-title mt-3 text-base-content/85">Insieme</li>${communityNav.map((x) => navLink(x)).join("")}</ul>`;
+    elements.desktopNav.innerHTML = `<ul class="menu w-full gap-1 px-0">${mainNav.map((x) => navLink(x)).join("")}${exploreMenu()}<li class="menu-title mt-3 text-base-content/90">Il tuo benessere</li>${wellnessNav.map((x) => navLink(x)).join("")}<li class="menu-title mt-3 text-base-content/90">Insieme</li>${communityNav.map((x) => navLink(x)).join("")}</ul>`;
     elements.mobileNav.innerHTML = dockNav
       .map((x) => navLink(x, true))
       .join("");
@@ -232,16 +306,33 @@ function rememberFocus() {
       index: active.dataset.index,
       duration: active.dataset.duration,
       text: active.dataset.text,
+      type: active.dataset.type,
+      route: active.dataset.route,
+      mode: active.dataset.mode,
     };
-  return active?.id ? { elementId: active.id } : null;
+  return active?.id
+    ? { elementId: active.id }
+    : active?.matches?.("a[href]")
+      ? { href: active.getAttribute("href") }
+      : null;
 }
 function restoreFocus(info) {
   if (!info) return;
   let target;
   if (info.elementId) target = document.getElementById(info.elementId);
+  else if (info.href)
+    target = document.querySelector(`a[href="${CSS.escape(info.href)}"]`);
   else {
     let selector = `[data-action="${CSS.escape(info.action)}"]`;
-    for (const key of ["id", "index", "duration", "text"])
+    for (const key of [
+      "id",
+      "index",
+      "duration",
+      "text",
+      "type",
+      "route",
+      "mode",
+    ])
       if (info[key] !== undefined)
         selector += `[data-${key}="${CSS.escape(info[key])}"]`;
     target = document.querySelector(selector);
@@ -258,6 +349,12 @@ function focusStep(selector) {
   if (!target) return;
   target.focus({ preventScroll: true });
   target.scrollIntoView({ block: "center", behavior: "instant" });
+}
+function announceResults() {
+  const summary = elements.main.querySelector(
+    "#diary-summary,#glucose-history-summary,[role=status]",
+  );
+  if (summary) announce(summary.textContent);
 }
 function allowWrite() {
   store.prepareWrite();
@@ -302,10 +399,19 @@ function render(focus = false) {
     return;
   }
   const focusInfo = rememberFocus();
+  capturePageDrafts();
   chrome();
   chatResizeObserver?.disconnect();
   breathingMotion.clear();
   widgetMotion.clear();
+  for (const outcome of [
+    ...Object.values(ui.pauseOutcomes),
+    ...Object.values(ui.practices),
+  ])
+    if (outcome.entryId)
+      outcome.entryMissing = !store.state.entries.some(
+        (entry) => entry.id === outcome.entryId,
+      );
   elements.main.innerHTML = renderer({
     state: store.state,
     ui,
@@ -315,14 +421,28 @@ function render(focus = false) {
     chatBusy: conversation.busy,
     recoveryRequired: store.recoveryRequired,
     breathing: breathingMotion.settings(),
+    pauseSummary: pauseSummary(timer, guidedTimers, meditations),
   });
+  suppressDraftCapture = false;
+  renderedFormScope = formScope();
+  const restored = formDrafts.restore(elements.main, renderedFormScope);
+  if (view === "glucosio") captureGlucoseDraft();
+  if (view === "community")
+    ui.community.draft = $("#community-text")?.value || "";
   breathingMotion.mount();
   if (view === "assistente") fitChatLog($("#messages"));
   if (focus) {
     window.scrollTo({ top: 0, behavior: "instant" });
-    elements.main.focus({ preventScroll: true });
-  } else restoreFocus(focusInfo);
+    const title = elements.main.querySelector("h1");
+    if (title) title.tabIndex = -1;
+    (title || elements.main).focus({ preventScroll: true });
+  } else if (!restored.focusRestored) restoreFocus(focusInfo);
   syncPineDetails();
+  if (view === "diario" && pendingDiaryEntryId) {
+    const id = pendingDiaryEntryId;
+    pendingDiaryEntryId = "";
+    focusStep(`[data-entry-id="${CSS.escape(id)}"]`);
+  }
 }
 async function navigate() {
   const route = resolveRoute(location.hash);
@@ -331,6 +451,9 @@ async function navigate() {
     return;
   }
   const request = ++navigationVersion;
+  capturePageDrafts();
+  if (elements.dialog.open && entryDraftScope)
+    formDrafts.capture(elements.dialogContent, entryDraftScope);
   elements.dialog.close();
   elements.drawer.checked = false;
   syncDrawer();
@@ -340,16 +463,7 @@ async function navigate() {
     if (request !== navigationVersion) return;
     view = route.view;
     renderer = nextRenderer;
-    if (view === "quiz") openQuiz(ui, route.category);
-    if (view === "ricetta") ui.discovery.recipe = recipeById(route.detail).id;
-    if (view === "gruppo")
-      ui.social.groupId =
-        groups.find((group) => group.id === route.detail)?.id || groups[0].id;
-    if (view === "sessione") ui.guided.sessionId = safeSession(route.detail).id;
-    if (view === "impara")
-      ui.learning.category = Object.hasOwn(quizSets, route.detail)
-        ? route.detail
-        : "all";
+    applyRouteDetails(route);
     render(true);
   } catch {
     if (request !== navigationVersion) return;
@@ -369,7 +483,31 @@ async function navigate() {
       elements.main.removeAttribute("aria-busy");
   }
 }
-function openEntry(type, id = "") {
+function applyRouteDetails(route = resolveRoute(location.hash)) {
+  let detail = "";
+  if (view === "quiz") {
+    openQuiz(ui, route.category);
+    detail = route.category;
+  }
+  if (view === "ricetta")
+    detail = ui.discovery.recipe = recipeById(route.detail).id;
+  if (view === "gruppo")
+    detail = ui.social.groupId =
+      groups.find((group) => group.id === route.detail)?.id || groups[0].id;
+  if (view === "sessione")
+    detail = ui.guided.sessionId = safeSession(route.detail).id;
+  if (view === "impara") {
+    ui.learning.category = Object.hasOwn(quizSets, route.detail)
+      ? route.detail
+      : "all";
+    detail = ui.learning.category === "all" ? "" : ui.learning.category;
+  }
+  if (["quiz", "ricetta", "gruppo", "sessione", "impara"].includes(view)) {
+    const canonical = `#${view}${detail ? `/${detail}` : ""}`;
+    if (location.hash !== canonical) history.replaceState(null, "", canonical);
+  }
+}
+function openEntry(type, id = "", context = "") {
   const entry = id ? store.state.entries.find((item) => item.id === id) : null;
   if (id && !entry) return;
   if (entry) type = entry.type;
@@ -383,19 +521,25 @@ function openEntry(type, id = "") {
     ].includes(type)
   )
     return;
-  elements.dialogContent.innerHTML = entryDialog(
-    type,
-    view === "diario" ? ui.diary.date : localDate(),
-    entry,
-  );
+  if (elements.dialog.open && entryDraftScope)
+    formDrafts.capture(elements.dialogContent, entryDraftScope);
+  entryDraftContext = context;
+  const date = view === "diario" ? ui.diary.date : localDate();
+  entryDraftScope = id
+    ? `entry:edit:${id}`
+    : `entry:${type}:${date}:${context}`;
+  elements.dialogContent.innerHTML = entryDialog(type, date, entry);
   showDialog();
+  formDrafts.restore(elements.dialogContent, entryDraftScope);
 }
 function openMeal(label, notes = "") {
-  openEntry("meal");
+  openEntry("meal", "", label);
   const form = $("#entry-form");
   if (!form) return;
-  form.elements.label.value = label;
-  form.elements.notes.value = notes;
+  if (form.dataset.draftRestored !== "true") {
+    form.elements.label.value = label;
+    form.elements.notes.value = notes;
+  }
   form.elements.label.focus();
 }
 
@@ -425,6 +569,44 @@ function showGlucoseError(message) {
   if (!error) return;
   error.hidden = false;
   error.textContent = message;
+  error.tabIndex = -1;
+  error.focus();
+}
+function showFieldError(form, errorId, name, message) {
+  const error = document.getElementById(errorId);
+  if (!error) return;
+  error.textContent = message;
+  error.tabIndex = -1;
+  error.hidden = false;
+  const field = form.querySelector(`[name="${CSS.escape(name)}"]`);
+  if (field) {
+    field.setAttribute("aria-invalid", "true");
+    const descriptions = new Set(
+      (field.getAttribute("aria-describedby") || "")
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    descriptions.add(errorId);
+    field.setAttribute("aria-describedby", [...descriptions].join(" "));
+    field.focus();
+  } else error.focus();
+}
+function clearFieldError(field) {
+  field.setCustomValidity?.("");
+  const form = field.closest("form");
+  const errorId = formErrorIds[form?.id];
+  if (!errorId) return;
+  const error = document.getElementById(errorId);
+  if (error) error.textContent = "";
+  for (const input of form?.querySelectorAll('[aria-invalid="true"]') || []) {
+    input.removeAttribute("aria-invalid");
+    const descriptions = (input.getAttribute("aria-describedby") || "")
+      .split(/\s+/)
+      .filter((id) => id && id !== errorId);
+    if (descriptions.length)
+      input.setAttribute("aria-describedby", descriptions.join(" "));
+    else input.removeAttribute("aria-describedby");
+  }
 }
 
 function deleteWithUndo(collection, id, message) {
@@ -446,6 +628,7 @@ function deleteWithUndo(collection, id, message) {
 async function previewBackup(file, input) {
   const request = ++backupVersion,
     route = navigationVersion;
+  const returnFocus = rememberFocus() || { elementId: input.id };
   pendingBackup = null;
   const status = $("#backup-status");
   status.textContent = "Controllo della copia in corso…";
@@ -461,6 +644,8 @@ async function previewBackup(file, input) {
       "Copia verificata. Conferma il ripristino nel riepilogo.";
     elements.dialogContent.innerHTML = backupDialog(pendingBackup, file.name);
     showDialog();
+    if (!dialogReturnFocus || document.activeElement === document.body)
+      dialogReturnFocus = returnFocus;
   } catch (error) {
     if (request === backupVersion && route === navigationVersion) {
       status.textContent =
@@ -495,15 +680,76 @@ function exportCSV() {
     "text/csv;charset=utf-8",
   );
 }
-function syncDrawer() {
-  elements.drawerTrigger.setAttribute(
-    "aria-expanded",
-    String(elements.drawer.checked),
+function updateGuidedStage(session, snapshot) {
+  const stage = guidedStage(session, snapshot);
+  const wrapper = $("#guided-stage");
+  if (
+    !wrapper ||
+    !$("#guided-stage-title") ||
+    Number(wrapper.dataset.stage) === stage.index
+  )
+    return;
+  wrapper.dataset.stage = String(stage.index);
+  $("#guided-stage-title").textContent = stage.title;
+  $("#guided-stage-text").textContent = stage.text;
+  $("#guided-stage-count").textContent =
+    `Spunto ${stage.index + 1} di ${stage.total}`;
+  for (let index = 0; index < stage.total; index++) {
+    const step = $(`#guided-stage-${index}`);
+    step.classList.toggle("step-primary", index <= stage.index);
+    if (index === stage.index) step.setAttribute("aria-current", "step");
+    else step.removeAttribute("aria-current");
+  }
+}
+function completePause(key, title, minutes) {
+  if (ui.pauseOutcomes[key]?.entryId) return;
+  const outcome = recordPause({
+    state: store.state,
+    key,
+    title,
+    minutes,
+    allowed: allowWrite(),
+    save: persist,
+  });
+  ui.pauseOutcomes[key] = outcome;
+  if (
+    [
+      "stress",
+      "sessione",
+      "meditazione",
+      "benessere",
+      "percorso",
+      "diario",
+      "giardino",
+      "progressi",
+      "evoluzione",
+      "ricompense",
+      "sfide",
+    ].includes(view)
+  )
+    render();
+  if (outcome.blocked) return;
+  toast(
+    outcome.saved
+      ? `${title} completata e registrata nel diario.`
+      : `${title} completata. La registrazione è disponibile in questa sessione: esportala per conservarla.`,
   );
+  showSavedDay(outcome.date, outcome.entryId);
+}
+function updatePauseSummary(route, snapshot) {
+  const summary = $("[data-pause-summary-route]");
+  if (summary?.dataset.pauseSummaryRoute === route) {
+    const time = $("#pause-summary-time");
+    if (time) time.textContent = formatTime(snapshot.remaining);
+  }
+}
+function syncDrawer() {
+  drawerNavigation.sync();
 }
 
 const timer = createTimer({
   onTick(snapshot) {
+    updatePauseSummary("stress", snapshot);
     if (view !== "stress") return;
     const time = $("#timer-time");
     if (time) time.textContent = formatTime(snapshot.remaining);
@@ -511,18 +757,7 @@ const timer = createTimer({
     syncPineDetails();
   },
   onComplete(snapshot) {
-    if (!allowWrite()) return;
-    addEntry(store.state, {
-      type: "mindful",
-      label: "Pausa di respirazione",
-      minutes: snapshot.duration / 60,
-    });
-    persist();
-    if (
-      ["stress", "percorso", "diario", "giardino", "progressi"].includes(view)
-    )
-      render();
-    toast("Pausa completata e salvata nel diario. Prenditi il tuo tempo.");
+    completePause("stress", "Pausa di respirazione", snapshot.duration / 60);
   },
 });
 const breathingMotion = createBreathingMotion({
@@ -562,7 +797,13 @@ function syncPineDetails() {
     (view === "stress" && timer.snapshot().running) ||
     (view === "sessione" &&
       guidedTimers.get(ui.guided.sessionId)?.snapshot().running) ||
-    (view === "frigo-sano" && fridgeTimer.snapshot().running);
+    (view === "frigo-sano" && fridgeTimer.snapshot().running) ||
+    (view === "risveglio" &&
+      ui.practices.wakeup.phase === "active" &&
+      !ui.practices.wakeup.paused) ||
+    (view === "luce-blu" &&
+      ui.practices.evening.phase === "active" &&
+      !ui.practices.evening.paused);
   pineMotion.setSuspended(elements.dialog.open || Boolean(timedTask));
   pineMotion.mount();
   const settings = pineMotion.settings();
@@ -585,6 +826,7 @@ function syncPineDetails() {
   }
 }
 function showDialog() {
+  if (!elements.dialog.open) dialogReturnFocus = rememberFocus();
   pineMotion.setSuspended(true);
   elements.dialog.showModal();
 }
@@ -596,38 +838,17 @@ const guidedTimers = new Map(
       durations: [duration],
       initialDuration: duration,
       onTick(snapshot) {
+        updatePauseSummary(`sessione/${session.id}`, snapshot);
         if (view !== "sessione" || ui.guided.sessionId !== session.id) return;
         const time = $("#guided-time");
         if (time) time.textContent = formatTime(snapshot.remaining);
         const progress = $("#guided-progress");
         if (progress) progress.value = snapshot.duration - snapshot.remaining;
+        updateGuidedStage(session, snapshot);
         syncPineDetails();
       },
       onComplete(snapshot) {
-        if (!allowWrite()) return;
-        addEntry(store.state, {
-          type: "mindful",
-          label: session.title,
-          minutes: snapshot.duration / 60,
-        });
-        persist();
-        if (
-          [
-            "sessione",
-            "stress",
-            "percorso",
-            "diario",
-            "giardino",
-            "progressi",
-            "evoluzione",
-            "ricompense",
-            "sfide",
-            "dettaglio-attivita",
-            "diario-attivita",
-          ].includes(view)
-        )
-          render();
-        toast(`${session.title} completata e salvata nel diario.`);
+        completePause(session.id, session.title, snapshot.duration / 60);
       },
     });
     return [session.id, guidedTimer];
@@ -641,7 +862,13 @@ const fridgeTimer = createTimer({
     const time = $("#fridge-game-time");
     if (time) time.textContent = formatTime(snapshot.remaining);
     const progress = $("#fridge-game-progress");
-    if (progress) progress.value = snapshot.remaining;
+    if (progress) {
+      progress.value = snapshot.remaining;
+      progress.setAttribute(
+        "aria-valuetext",
+        `${snapshot.remaining} secondi rimasti`,
+      );
+    }
     syncPineDetails();
   },
   onComplete() {
@@ -656,8 +883,33 @@ const fridgeTimer = createTimer({
   },
 });
 function pauseHealthTimers(except = null) {
+  const paused = [];
   for (const current of [timer, ...guidedTimers.values()])
-    if (current !== except && current.snapshot().running) current.toggle();
+    if (current !== except && current.snapshot().running) {
+      current.toggle();
+      if (current.snapshot().started)
+        paused.push(
+          current === timer
+            ? "Respirazione con Pigna"
+            : meditations.find((item) => guidedTimers.get(item.id) === current)
+                .title,
+        );
+    }
+  for (const [key, title] of [
+    ["wakeup", "La routine del risveglio"],
+    ["evening", "La routine serale"],
+  ]) {
+    const practice = ui.practices[key];
+    if (practice.phase === "active" && !practice.paused) {
+      practice.paused = true;
+      paused.push(title);
+    }
+  }
+  if (except && paused.length)
+    toast(
+      `${paused.join(", ")} è in pausa. Potrai riprenderla dallo stesso punto.`,
+    );
+  return paused;
 }
 function pauseAllTimers() {
   pauseHealthTimers();
@@ -680,12 +932,46 @@ const conversation = createConversation({
     storageBanner();
     if (view === "assistente") {
       render();
-      if (change === "replied") $("#chat-message")?.focus();
+      if (change === "sent") $("#chat-message")?.focus({ preventScroll: true });
+      if (change === "replied")
+        announce(`Pigna: ${store.state.chat.at(-1)?.text || ""}`);
     }
   },
 });
 
 const actions = {
+  ...createPracticeActions({
+    ui,
+    store,
+    render,
+    allowWrite,
+    persist,
+    toast,
+    showSavedDay,
+    prepare: () => {
+      const paused = pauseHealthTimers();
+      if (paused.length)
+        toast(
+          `${paused.join(", ")} è in pausa. Potrai riprenderla dallo stesso punto.`,
+        );
+    },
+    focus: () =>
+      focusStep("#practice-current,#practice-minutes,#practice-heading"),
+    readMinutes: () => $("#practice-minutes")?.value || "",
+    showError: (message) => {
+      const error = $("#practice-error");
+      if (error) error.textContent = message;
+      const field = $("#practice-minutes");
+      if (field) {
+        field.setAttribute("aria-invalid", "true");
+        field.setAttribute(
+          "aria-describedby",
+          "practice-duration-help practice-error",
+        );
+        field.focus();
+      }
+    },
+  }),
   "retry-screen": () => navigate(),
   navigate: (el) => {
     location.hash = el.dataset.route;
@@ -693,6 +979,27 @@ const actions = {
   "open-entry": (el) => openEntry(el.dataset.type),
   "edit-entry": (el) => openEntry("", el.dataset.id),
   "close-dialog": () => $("#entry-dialog").close(),
+  "close-navigation": () => drawerNavigation.close(),
+  "toggle-navigation": () => {
+    elements.drawer.checked = !elements.drawer.checked;
+    syncDrawer();
+  },
+  "close-toast": () => {
+    const hadFocus = elements.toast.contains(document.activeElement);
+    elements.toast.hidden = true;
+    undoAction = null;
+    if (hadFocus) elements.main.focus({ preventScroll: true });
+  },
+  "discard-entry-draft": () => {
+    const form = $("#entry-form");
+    if (!form) return;
+    const type = form.dataset.type,
+      id = form.dataset.id || "";
+    formDrafts.clear(entryDraftScope);
+    entryDraftScope = "";
+    openEntry(type, id, entryDraftContext);
+    toast("Bozza scartata. Puoi ricominciare da questi campi.");
+  },
   "delete-entry": (el) =>
     deleteWithUndo(
       "entries",
@@ -704,6 +1011,7 @@ const actions = {
     if (!validDate(el.dataset.date)) return;
     ui.diary.date = el.dataset.date;
     ui.diary.filter = "all";
+    pendingDiaryEntryId = el.dataset.entryId || "";
     if (view === "diario") render(true);
     else location.hash = "diario";
     elements.toast.hidden = true;
@@ -752,7 +1060,7 @@ const actions = {
   "plate-add": (el) => {
     if (
       ui.plate.items.length < 4 &&
-      foods.some((food) => food.id === el.dataset.id)
+      plateFoods.some((food) => food.id === el.dataset.id)
     ) {
       const origin = widgetMotion.capture(el);
       const index = ui.plate.items.length;
@@ -798,17 +1106,21 @@ const actions = {
     if (!plateBalance(ui.plate.items).balanced) return;
     addEntry(store.state, {
       type: "meal",
-      label: ui.plate.items
-        .map((id) => foods.find((f) => f.id === id).name)
-        .join(", "),
+      label: ui.plate.items.map((id) => foodById(id).name).join(", "),
       meal: ui.plate.meal,
     });
-    persist();
+    const entry = store.state.entries.at(-1);
+    const saved = persist();
     ui.plate.items = [];
     ui.plate.message = "";
     ui.plate.target = null;
     location.hash = "alimentazione";
-    toast("Piatto aggiunto al diario. Alberello ti ringrazia!");
+    toast(
+      saved
+        ? "Piatto aggiunto al diario."
+        : "Piatto disponibile in questa sessione. Esporta una copia per conservarlo.",
+    );
+    showSavedDay(entry.date, entry.id);
   },
   "fridge-toggle": (el) => {
     const id = el.dataset.id;
@@ -830,10 +1142,25 @@ const actions = {
     );
   },
   "recipe-favorite": (el) => {
-    if (!recipes.some((recipe) => recipe.id === el.dataset.id)) return;
+    const recipe = recipes.find((item) => item.id === el.dataset.id);
+    if (!recipe) return;
     togglePreference("recipeFavorites", el.dataset.id);
-    persist();
+    const saved = persist();
     render();
+    toast(
+      `${recipe.name} ${store.state.recipeFavorites.includes(recipe.id) ? "aggiunta alle" : "rimossa dalle"} preferite.${saved ? "" : " Scelta valida in questa sessione."}`,
+    );
+  },
+  "recipe-step": (el) => {
+    ui.discovery.recipeSteps ??= {};
+    if (
+      toggleRecipeStep(
+        ui.discovery.recipeSteps,
+        el.dataset.id,
+        Number(el.dataset.index),
+      )
+    )
+      render();
   },
   "recipe-save": (el) => {
     const recipe = recipes.find((item) => item.id === el.dataset.id);
@@ -846,19 +1173,27 @@ const actions = {
   "recipe-pantry": (el) => {
     const recipe = recipes.find((item) => item.id === el.dataset.id);
     if (!recipe) return;
-    for (const id of recipe.pantry) {
+    const added = [];
+    for (const food of recipePantryFoods(recipe.id)) {
+      const id = food.id;
       const collection = foods.some((food) => food.id === id)
         ? "fridge"
         : "pantryExtras";
       if (
         catalogFoods().some((food) => food.id === id) &&
         !store.state[collection].includes(id)
-      )
+      ) {
         store.state[collection].push(id);
+        added.push(food.name);
+      }
     }
-    persist();
+    const saved = persist();
     render();
-    toast("Ingredienti aggiunti alla dispensa locale.");
+    toast(
+      added.length
+        ? `${added.join(", ")} aggiunti alla dispensa.${saved ? "" : " Disponibili in questa sessione."}`
+        : "Gli ingredienti del catalogo sono già nella tua dispensa.",
+    );
   },
   "recipe-clear-filter": () => {
     ui.discovery.recipeQuery = "";
@@ -894,18 +1229,25 @@ const actions = {
     focusStep("#food-query");
   },
   "pantry-plate": () => {
-    const suggestion = pantryPlate(store.state.fridge);
+    const suggestion = pantryPlate([
+      ...store.state.fridge,
+      ...store.state.pantryExtras,
+    ]);
     if (suggestion.missing.length) return;
     ui.plate.items = suggestion.items;
     ui.plate.message = "";
     ui.plate.meal = "Pranzo";
+    ui.plate.target = null;
     location.hash = "piatto";
   },
   claim: (el) => {
     if (claimReward(store.state, el.dataset.id)) {
-      persist();
+      const saved = persist();
       render();
-      toast("Una nuova ricompensa nel tuo giardino!");
+      const reward = rewards.find((item) => item.id === el.dataset.id);
+      toast(
+        `${reward.name}: ricompensa sbloccata e in uso nel giardino.${saved ? "" : " Disponibile in questa sessione."}`,
+      );
     }
   },
   decorate: (el) => {
@@ -919,23 +1261,27 @@ const actions = {
     }
   },
   "timer-duration": (el) => {
+    if (!timer.snapshot().started) delete ui.pauseOutcomes.stress;
     timer.setDuration(Number(el.dataset.duration));
     render();
   },
   "timer-toggle": () => {
     const firstStart = !timer.snapshot().started;
+    if (firstStart) delete ui.pauseOutcomes.stress;
     if (!timer.snapshot().running) pauseHealthTimers(timer);
     timer.toggle();
     render();
     if (firstStart && timer.snapshot().running) focusStep("#breathing-phase");
   },
   "timer-reset": () => {
+    delete ui.pauseOutcomes.stress;
     timer.reset();
     render();
   },
   "guided-toggle": (el) => {
     const selected = guidedTimers.get(el.dataset.id);
     if (!selected) return;
+    if (!selected.snapshot().started) delete ui.pauseOutcomes[el.dataset.id];
     if (!selected.snapshot().running) pauseHealthTimers(selected);
     selected.toggle();
     render();
@@ -943,14 +1289,26 @@ const actions = {
   "guided-reset": (el) => {
     const session = meditations.find((item) => item.id === el.dataset.id);
     if (!session) return;
+    delete ui.pauseOutcomes[session.id];
     guidedTimers.get(session.id).reset(session.minutes * 60);
     render();
   },
-  "fridge-game-start": () => {
+  "pause-save": (el) => {
+    const key = el.dataset.id;
+    const outcome = ui.pauseOutcomes[key];
+    if (!outcome?.blocked || outcome.entryId) return;
+    const title =
+      key === "stress"
+        ? "Pausa di respirazione"
+        : meditations.find((item) => item.id === key)?.title;
+    if (title) completePause(key, title, outcome.minutes);
+  },
+  "fridge-game-start": (el) => {
     ui.discovery.fridgeGame = initialFridgeGame();
     ui.discovery.fridgeGame.started = true;
+    ui.discovery.fridgeGame.untimed = el.dataset.mode === "untimed";
     fridgeTimer.reset(30);
-    fridgeTimer.toggle();
+    if (!ui.discovery.fridgeGame.untimed) fridgeTimer.toggle();
     render();
     focusStep("#fridge-question");
   },
@@ -986,30 +1344,6 @@ const actions = {
       : [...ui.guided.exerciseIds, id];
     render();
   },
-  "wake-save": () => {
-    const selected = validExerciseIds(ui.guided.exerciseIds);
-    const field = $("#wake-minutes");
-    const minutes = validExerciseMinutes(field?.value);
-    if (!selected.length) return;
-    if (minutes === null) {
-      field?.setCustomValidity(
-        "Inserisci i minuti effettivi, da 1 a 180, senza decimali.",
-      );
-      field?.reportValidity();
-      return;
-    }
-    addEntry(store.state, {
-      type: "movement",
-      label: `Risveglio muscolare: ${exerciseLabel(selected)}`,
-      minutes,
-    });
-    persist();
-    ui.guided.exerciseIds = [];
-    ui.guided.exerciseMinutes = minutes;
-    render();
-    focusStep("#wake-minutes");
-    toast("Routine registrata nel diario con i minuti che hai indicato.");
-  },
   "routine-toggle": (el) => {
     if (!sleepRoutine.some((item) => item.id === el.dataset.id)) return;
     store.state.sleepRoutine = validRoutineIds(store.state.sleepRoutine);
@@ -1032,6 +1366,7 @@ const actions = {
     store.state.notificationsRead = false;
     store.state.notificationsReadDate = "";
     persist();
+    delete ui.guided.reminderTime;
     render();
     toast("Preferenza del promemoria serale aggiornata.");
   },
@@ -1207,6 +1542,8 @@ const actions = {
     focusStep("#risk-question");
   },
   "risk-restart": () => {
+    for (let step = 0; step < riskQuestions.length; step++)
+      formDrafts.clear(`risk:${step}`);
     ui.risk = initialRisk();
     render();
     focusStep("#risk-question");
@@ -1218,6 +1555,13 @@ const actions = {
       "application/json",
     ),
   "recover-storage": () => {
+    const pendingPauses = Object.fromEntries(
+      Object.entries(ui.pauseOutcomes).filter(
+        ([, outcome]) => outcome.blocked && !outcome.entryId,
+      ),
+    );
+    const pendingPractice =
+      ui.practices.wakeup.phase === "review" ? ui.practices.wakeup : null;
     if (!store.recover()) {
       storageBanner();
       toast(
@@ -1227,8 +1571,11 @@ const actions = {
     }
     conversation.cancelPending();
     resetAllTimers();
+    forgetAllDrafts();
     Object.assign(ui, initialSession());
-    if (view === "quiz") openQuiz(ui, resolveRoute(location.hash).category);
+    Object.assign(ui.pauseOutcomes, pendingPauses);
+    if (pendingPractice) ui.practices.wakeup = pendingPractice;
+    applyRouteDetails();
     render(true);
     toast("Percorso ritrovato e recuperato in questo browser.");
   },
@@ -1253,7 +1600,9 @@ const actions = {
     }
     conversation.cancelPending();
     resetAllTimers();
+    forgetAllDrafts();
     Object.assign(ui, initialSession());
+    applyRouteDetails();
     elements.dialog.close();
     storageBanner();
     render(true);
@@ -1281,6 +1630,7 @@ const actions = {
     }
     pineMotion.setEnabled(true);
     resetAllTimers();
+    forgetAllDrafts();
     Object.assign(ui, initialSession());
     elements.dialog.close();
     location.hash = "profilo";
@@ -1297,8 +1647,6 @@ const actions = {
 };
 
 const writeActions = new Set([
-  "open-entry",
-  "edit-entry",
   "delete-entry",
   "undo-delete",
   "water-plus",
@@ -1306,25 +1654,18 @@ const writeActions = new Set([
   "plate-save",
   "fridge-toggle",
   "recipe-favorite",
-  "recipe-save",
   "recipe-pantry",
-  "food-add",
   "market-toggle",
   "food-clear-recent",
   "claim",
   "decorate",
-  "timer-toggle",
-  "guided-toggle",
-  "wake-save",
   "routine-toggle",
   "sleep-reminder",
   "join-group",
   "challenge-join",
-  "glucose-edit",
   "glucose-delete",
   "water-tree",
   "like-post",
-  "edit-post",
   "delete-post",
   "chat-suggestion",
   "clear-chat",
@@ -1333,23 +1674,35 @@ const writeActions = new Set([
 ]);
 
 document.addEventListener("keydown", (event) => {
-  if (
-    event.target.matches("[data-drawer-trigger]") &&
-    ["Enter", " "].includes(event.key)
-  ) {
-    event.preventDefault();
-    event.target.click();
-  }
-  if (event.key === "Escape" && elements.drawer.checked) {
-    elements.drawer.checked = false;
-    syncDrawer();
-    elements.drawerTrigger.focus();
-  }
+  drawerNavigation.keydown(event);
+});
+document.addEventListener("focusin", (event) => {
+  const target = event.target;
+  if (!elements.main.contains(target) || target === elements.main) return;
+  const bounds = target.getBoundingClientRect();
+  const overlaps = (overlay) => {
+    if (overlay.hidden || !overlay.getClientRects().length) return false;
+    const rect = overlay.getBoundingClientRect();
+    return (
+      bounds.bottom > rect.top &&
+      bounds.top < rect.bottom &&
+      bounds.right > rect.left &&
+      bounds.left < rect.right
+    );
+  };
+  if (overlaps(elements.toast) || overlaps(elements.mobileNav))
+    target.scrollIntoView({ block: "center", behavior: "instant" });
 });
 document.addEventListener("click", (event) => {
+  if (event.target.closest("[data-skip-link]")) {
+    event.preventDefault();
+    focusStep("#main");
+    return;
+  }
   if (event.target.closest('.drawer-side a[href^="#"]')) {
-    elements.drawer.checked = false;
-    syncDrawer();
+    drawerNavigation.close(false);
+    if (event.target.closest("a").getAttribute("href") === location.hash)
+      focusStep("#main");
   }
   const control = event.target.closest("[data-action]");
   if (
@@ -1368,6 +1721,7 @@ document.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("change", (event) => {
+  if (event.target.closest(validatedForms)) clearFieldError(event.target);
   if (event.target.id === "pine-motion-toggle") {
     pineMotion.setEnabled(event.target.checked);
     try {
@@ -1390,10 +1744,12 @@ document.addEventListener("change", (event) => {
         ? event.target.value
         : localDate();
     render();
+    announceResults();
   }
   if (event.target.id === "diary-filter") {
     ui.diary.filter = event.target.value;
     render();
+    announceResults();
   }
   if (
     event.target.id === "progress-category" &&
@@ -1411,6 +1767,7 @@ document.addEventListener("change", (event) => {
       ? event.target.value
       : "all";
     render();
+    announceResults();
   }
   if (event.target.id === "recipe-filter") {
     ui.discovery.recipeFilter = [
@@ -1422,12 +1779,14 @@ document.addEventListener("change", (event) => {
       ? event.target.value
       : "all";
     render();
+    announceResults();
   }
   if (event.target.id === "group-category") {
     ui.social.category = Object.hasOwn(groupCategories, event.target.value)
       ? event.target.value
       : "all";
     render();
+    announceResults();
   }
   if (event.target.id === "reward-theme") {
     ui.forest.theme = ["all", "nature", "winter"].includes(event.target.value)
@@ -1437,8 +1796,14 @@ document.addEventListener("change", (event) => {
   }
   if (event.target.id === "glucose-period") {
     captureGlucoseDraft();
-    ui.glucose.period = Number(event.target.value) === 30 ? 30 : 7;
+    ui.glucose.period =
+      event.target.value === "all"
+        ? "all"
+        : Number(event.target.value) === 30
+          ? 30
+          : 7;
     render();
+    announceResults();
   }
   if (event.target.id === "sleep-reminder-time") {
     const field = event.target;
@@ -1460,6 +1825,7 @@ document.addEventListener("change", (event) => {
     store.state.notificationsRead = false;
     store.state.notificationsReadDate = "";
     persist();
+    delete ui.guided.reminderTime;
     render();
   }
   if (event.target.id === "plate-meal") ui.plate.meal = event.target.value;
@@ -1503,6 +1869,7 @@ document.addEventListener("submit", (e) => {
     }
     render();
     focusStep("#food-query");
+    announceResults();
     return;
   }
   if (e.target.id === "recipe-search-form") {
@@ -1512,6 +1879,7 @@ document.addEventListener("submit", (e) => {
       .slice(0, 80);
     render();
     focusStep("#recipe-search");
+    announceResults();
     return;
   }
   if (e.target.id === "groups-search-form") {
@@ -1525,6 +1893,7 @@ document.addEventListener("submit", (e) => {
       : "all";
     render();
     focusStep("#group-search");
+    announceResults();
     return;
   }
   if (e.target.id === "garden-friends-form") {
@@ -1534,6 +1903,9 @@ document.addEventListener("submit", (e) => {
       .slice(0, 80);
     render();
     focusStep("#garden-friends-query");
+    announce(
+      `${elements.main.querySelectorAll('[data-action="water-tree"]').length} persone trovate nel giardino dimostrativo.`,
+    );
     return;
   }
   if (e.target.id === "glucose-form") {
@@ -1571,18 +1943,34 @@ document.addEventListener("submit", (e) => {
       }
       const editing = !!ui.glucose.editing;
       store.state.glucoseReadings = normalizedReadings(readings, localDate());
-      persist();
+      const saved = persist();
+      const range = glucoseReport(
+        store.state.glucoseReadings,
+        ui.glucose.period,
+        localDate(),
+      );
+      if (reading.date < range.from) ui.glucose.period = "all";
+      forgetForm("glucose-form");
       ui.glucose.editing = "";
       delete ui.glucose.draft;
       render();
       focusStep("#glucose-value");
       toast(
-        editing
-          ? "Misurazione aggiornata nel registro."
-          : "Misurazione salvata nel registro.",
+        !saved
+          ? "Misurazione disponibile in questa sessione. Esporta una copia per conservarla."
+          : editing
+            ? "Misurazione aggiornata nel registro."
+            : "Misurazione salvata nel registro.",
       );
     } catch (error) {
-      showGlucoseError(error.message);
+      const name = error.message.startsWith("Scegli una data")
+        ? "date"
+        : error.message.startsWith("Inserisci un orario")
+          ? "time"
+          : error.message.startsWith("Inserisci il valore")
+            ? "value"
+            : "";
+      showFieldError(e.target, "glucose-error", name, error.message);
     }
     return;
   }
@@ -1598,11 +1986,13 @@ document.addEventListener("submit", (e) => {
       });
       if (form.dataset.id) updateEntry(store.state, form.dataset.id, entry);
       else addEntry(store.state, entry, entry.date);
-      persist();
+      const saved = persist();
       if (view === "diario") {
         ui.diary.date = entry.date;
         ui.diary.filter = "all";
       }
+      formDrafts.clear(entryDraftScope);
+      entryDraftScope = "";
       elements.dialog.close();
       render();
       const added = totalPoints(store.state) - before;
@@ -1613,19 +2003,31 @@ document.addEventListener("submit", (e) => {
         timeZone: "Europe/Rome",
       }).format(new Date(`${entry.date}T12:00:00Z`));
       toast(
-        form.dataset.id
-          ? "Registrazione aggiornata. Le foglie restano invariate."
-          : added
-            ? `Salvato nel diario. +${added} foglie per il tuo Alberello!`
-            : "Salvato nel tuo diario.",
+        !saved
+          ? "Registrazione disponibile in questa sessione. Esporta una copia per conservarla."
+          : form.dataset.id
+            ? "Registrazione aggiornata. Le foglie restano invariate."
+            : added
+              ? `Salvato nel diario. +${added} foglie per il tuo Alberello!`
+              : "Salvato nel tuo diario.",
       );
       if (entry.date !== localDate()) {
         elements.toastMessage.textContent += ` Giorno: ${dateLabel}.`;
-        elements.toastDay.dataset.date = entry.date;
-        elements.toastDay.hidden = false;
       }
+      showSavedDay(
+        entry.date,
+        form.dataset.id || store.state.entries.at(-1).id,
+      );
     } catch (error) {
-      $("#entry-error").textContent = error.message;
+      const name =
+        !validDate(data.get("date")) || data.get("date") > localDate()
+          ? "date"
+          : form.dataset.type === "meal"
+            ? "label"
+            : form.dataset.type === "sleep"
+              ? "hours"
+              : "minutes";
+      showFieldError(form, "entry-error", name, error.message);
     }
     return;
   }
@@ -1638,17 +2040,20 @@ document.addEventListener("submit", (e) => {
         new FormData(e.target).get("text"),
         ui.community.editing,
       );
+      forgetForm("community-form");
       Object.assign(ui.community, { editing: "", draft: "" });
-      persist();
+      const saved = persist();
       render();
       $("#community-text").focus();
       toast(
-        editing
-          ? "Messaggio aggiornato nella demo locale."
-          : "Messaggio salvato nella demo, solo sul tuo dispositivo.",
+        !saved
+          ? "Messaggio disponibile nella demo di questa sessione. Esporta una copia per conservarlo."
+          : editing
+            ? "Messaggio aggiornato nella demo locale."
+            : "Messaggio salvato nella demo, solo sul tuo dispositivo.",
       );
     } catch (error) {
-      $("#community-error").textContent = error.message;
+      showFieldError(e.target, "community-error", "text", error.message);
     }
     return;
   }
@@ -1658,6 +2063,12 @@ document.addEventListener("submit", (e) => {
       name = data.get("name").trim();
     if (!name) {
       e.target.elements.name.setCustomValidity("Inserisci il tuo nome.");
+      showFieldError(
+        e.target,
+        "profile-error",
+        "name",
+        "Inserisci il tuo nome.",
+      );
       e.target.elements.name.reportValidity();
       return;
     }
@@ -1668,13 +2079,22 @@ document.addEventListener("submit", (e) => {
       water: Number(data.get("water")),
     };
     store.state.onboarded = true;
-    persist();
+    const saved = persist();
+    forgetForm("profile-form");
     render();
-    toast("Il tuo profilo è stato salvato. Il percorso è tuo!");
+    toast(
+      saved
+        ? "Il tuo profilo è stato salvato. Il percorso è tuo!"
+        : "Profilo aggiornato per questa sessione. Esporta una copia per conservarlo.",
+    );
   }
   if (e.target.id === "chat-form") {
     e.preventDefault();
-    conversation.send(new FormData(e.target).get("message"));
+    const message = String(new FormData(e.target).get("message") || "").trim();
+    if (!message || conversation.busy) return;
+    forgetForm("chat-form");
+    $("#chat-message").value = "";
+    conversation.send(message);
   }
   if (e.target.id === "risk-form") {
     e.preventDefault();
@@ -1697,14 +2117,22 @@ document.addEventListener("submit", (e) => {
           asian: ui.risk.answers.asian,
         });
       } catch (error) {
-        $("#risk-error").textContent = error.message;
+        const height = Number(data.get("height"));
+        showFieldError(
+          e.target,
+          "risk-error",
+          !Number.isFinite(height) || height < 100 || height > 230
+            ? "height"
+            : "weight",
+          error.message,
+        );
         return;
       }
     } else {
       try {
         advanceRisk(ui.risk, data.get("answer"));
       } catch (error) {
-        $("#risk-error").textContent = error.message;
+        showFieldError(e.target, "risk-error", "answer", error.message);
         return;
       }
     }
@@ -1714,6 +2142,7 @@ document.addEventListener("submit", (e) => {
 });
 
 document.addEventListener("input", (event) => {
+  if (event.target.closest(validatedForms)) clearFieldError(event.target);
   if (event.target.name === "name") event.target.setCustomValidity("");
   if (event.target.id === "community-text") {
     ui.community.draft = event.target.value;
@@ -1729,12 +2158,17 @@ document.addEventListener("input", (event) => {
     ui.social.query = event.target.value.slice(0, 80);
   if (event.target.id === "garden-friends-query")
     ui.social.friendsQuery = event.target.value.slice(0, 80);
-  if (event.target.id === "wake-minutes") {
-    event.target.setCustomValidity("");
-    ui.guided.exerciseMinutes = event.target.value;
+  if (event.target.id === "practice-minutes") {
+    ui.practices.wakeup.minutes = event.target.value;
+    event.target.removeAttribute("aria-invalid");
+    event.target.setAttribute("aria-describedby", "practice-duration-help");
+    const error = $("#practice-error");
+    if (error) error.textContent = "";
   }
-  if (event.target.id === "sleep-reminder-time")
+  if (event.target.id === "sleep-reminder-time") {
     event.target.setCustomValidity("");
+    ui.guided.reminderTime = event.target.value;
+  }
   if (event.target.closest("#glucose-form")) {
     captureGlucoseDraft();
     const error = $("#glucose-error");
@@ -1745,10 +2179,38 @@ document.addEventListener("input", (event) => {
   }
 });
 elements.dialog.addEventListener("close", () => {
+  if (entryDraftScope)
+    formDrafts.capture(elements.dialogContent, entryDraftScope);
   pendingBackup = null;
   backupVersion++;
   syncPineDetails();
+  const returnFocus = dialogReturnFocus;
+  dialogReturnFocus = null;
+  queueMicrotask(() => {
+    if (
+      document.activeElement === document.body ||
+      elements.dialog.contains(document.activeElement)
+    )
+      restoreFocus(returnFocus);
+  });
 });
+let invalidFormInBatch = null;
+document.addEventListener(
+  "invalid",
+  (event) => {
+    const field = event.target;
+    if (!field.closest(validatedForms)) return;
+    const form = field.closest("form");
+    if (invalidFormInBatch === form) return;
+    invalidFormInBatch = form;
+    queueMicrotask(() => {
+      invalidFormInBatch = null;
+    });
+    const errorId = formErrorIds[form.id];
+    showFieldError(form, errorId, field.name, field.validationMessage);
+  },
+  true,
+);
 window.addEventListener("hashchange", navigate);
 window.addEventListener("storage", (event) => {
   if (event.key === PINE_PREFERENCE_KEY || event.key === null) {
@@ -1783,4 +2245,5 @@ document.addEventListener("visibilitychange", () => {
 document.querySelectorAll("[data-icon]").forEach((element) => {
   element.innerHTML = icon(element.dataset.icon);
 });
+syncDrawer();
 navigate();

@@ -75,6 +75,14 @@ export function createBreathingMotion({
 
   function update(timer = getSnapshot()) {
     const state = breathingState(timer);
+    writeText(
+      "#breathing-status",
+      timer.running
+        ? "Pausa in corso"
+        : timer.started
+          ? "Pausa sospesa"
+          : "Pronta quando vuoi",
+    );
     writeText("#breathing-phase", state.phase);
     writeText("#breathing-cue", state.cue);
     writeText(

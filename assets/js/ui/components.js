@@ -62,13 +62,13 @@ export const link = (route, label, symbol = "arrow-right") =>
   `<a class="btn btn-ghost h-auto min-h-11 justify-start px-0 text-base-content" href="#${route}">${label}${icon(symbol)}</a>`;
 
 export const resourceMenu = (items) =>
-  `<ul class="menu w-full gap-1 p-0">${items.map(([route, sym, title, desc]) => `<li><a class="grid min-h-14 grid-cols-[auto_1fr_auto] gap-3 px-2 py-3" href="#${route}">${icon(sym)}<span class="min-w-0"><strong class="block font-semibold">${title}</strong><span class="mt-1 block text-xs text-base-content/85">${desc}</span></span>${icon("chevron-right")}</a></li>`).join("")}</ul>`;
+  `<ul class="menu w-full gap-1 p-0">${items.map(([route, sym, title, desc]) => `<li><a class="grid min-h-14 grid-cols-[auto_1fr_auto] gap-3 px-2 py-3" href="#${route}">${icon(sym)}<span class="min-w-0"><strong class="block font-semibold">${title}</strong><span class="mt-1 block text-xs text-base-content/90">${desc}</span></span>${icon("chevron-right")}</a></li>`).join("")}</ul>`;
 
 export const field = (label, control) =>
   `<label class="label flex-col items-start gap-2 whitespace-normal text-sm text-base-content"><span>${label}</span>${control}</label>`;
 
 export const stats = (items) =>
-  `<div class="stats stats-vertical w-full bg-base-200 sm:stats-horizontal">${items.map(([value, title, desc = ""]) => `<div class="stat min-w-0 p-4"><div class="stat-title whitespace-normal text-base-content/85">${title}</div><div class="stat-value font-serif text-3xl font-medium">${value}</div>${desc ? `<div class="stat-desc whitespace-normal text-base-content/85">${desc}</div>` : ""}</div>`).join("")}</div>`;
+  `<div class="stats stats-vertical w-full bg-base-200 sm:stats-horizontal">${items.map(([value, title, desc = ""]) => `<div class="stat min-w-0 p-4"><div class="stat-title whitespace-normal text-base-content/90">${title}</div><div class="stat-value font-serif text-3xl font-medium">${value}</div>${desc ? `<div class="stat-desc whitespace-normal text-base-content/90">${desc}</div>` : ""}</div>`).join("")}</div>`;
 
 export const pointsPill = (state) =>
   `<span class="badge badge-accent badge-lg whitespace-nowrap">${icon("star", "size-4")}${availablePoints(state)} foglie</span>`;
@@ -79,16 +79,16 @@ export function alberello(state, cls = "h-64 w-64 sm:h-72 sm:w-72") {
   );
   if (reward?.preview)
     return `<div class="flex flex-col items-center gap-3"><img class="${cls} object-contain" src="assets/images/alberello-original.png" alt="Alberello, il tuo compagno di percorso" width="422" height="422"><div class="avatar"><div class="w-20 rounded-box bg-base-100"><img src="${esc(reward.image)}" alt="${esc(reward.name)}, ricompensa scelta nel giardino" width="512" height="512" class="object-contain" loading="lazy"></div></div><span class="text-sm">${esc(reward.name)} · nel tuo giardino</span></div>`;
-  return `<img class="${cls} object-contain" src="assets/images/${reward ? `garden-${reward.id}.webp` : "alberello-original.png"}" alt="${reward ? `Alberello · ${reward.name}` : "Alberello, un abete sorridente che ti saluta"}" width="${reward ? 640 : 422}" height="${reward ? 640 : 422}">`;
+  return `<img class="${cls} object-contain" src="assets/images/${reward ? `garden-${reward.id}.webp` : "alberello-original.png"}" alt="${reward ? `Alberello · ${esc(reward.name)}` : "Alberello, un abete sorridente che ti saluta"}" width="${reward ? 640 : 422}" height="${reward ? 640 : 422}">`;
 }
 
 export function heading(title, description, actions = "") {
   const pine = `<figure class="pointer-events-none shrink-0" aria-hidden="true"><img src="assets/images/pine-branch-v1.webp" alt="" width="576" height="384" class="h-10 w-20 object-contain sm:h-14 sm:w-24" data-pine-motion="branch" decoding="async"></figure>`;
-  return `<div class="mb-6 flex flex-wrap items-start justify-between gap-4 sm:mb-7"><div class="min-w-0 max-w-full"><h1 class="break-words [overflow-wrap:anywhere]">${title}</h1>${description ? `<p class="mt-2 max-w-[72ch] text-base-content/85">${description}</p>` : ""}</div><div class="${actions ? "flex" : "hidden min-[480px]:flex"} min-w-0 max-w-full flex-wrap items-center gap-3">${actions ? `<div class="flex min-w-0 max-w-full flex-wrap items-center gap-2">${actions}</div>` : ""}${pine}</div></div>`;
+  return `<div class="mb-6 flex flex-wrap items-start justify-between gap-4 sm:mb-7"><div class="min-w-0 max-w-full"><h1 class="break-words [overflow-wrap:anywhere]">${title}</h1>${description ? `<p class="mt-2 max-w-[72ch] text-base-content/90">${description}</p>` : ""}</div><div class="${actions ? "flex" : "hidden min-[480px]:flex"} min-w-0 max-w-full flex-wrap items-center gap-3">${actions ? `<div class="flex min-w-0 max-w-full flex-wrap items-center gap-2">${actions}</div>` : ""}${pine}</div></div>`;
 }
 
 export function empty(title, text, action = "") {
-  return `<div class="flex flex-col items-center gap-3 py-8 text-center">${avatar(icon("clipboard-document-list"))}<h3>${title}</h3><p class="max-w-md text-sm text-base-content/85">${text}</p>${action}</div>`;
+  return `<div class="flex flex-col items-center gap-3 py-8 text-center">${avatar(icon("clipboard-document-list"))}<h3>${title}</h3><p class="max-w-md text-sm text-base-content/90">${text}</p>${action}</div>`;
 }
 
 export function entryDetails(e) {
@@ -100,11 +100,21 @@ export function entryDetails(e) {
     return `${Number(e.hours) || 0} ${Number(e.hours) === 1 ? "ora" : "ore"} · ${esc(e.quality || "")}`;
   if (e.type === "mindful") {
     const minutes = Number(e.minutes) || 1;
-    return `${minutes} ${minutes === 1 ? "minuto" : "minuti"} di respirazione`;
+    return `${minutes} ${minutes === 1 ? "minuto" : "minuti"} di pausa`;
   }
   if (e.type === "water") return "1 bicchiere";
   return esc(e.meal || "Pasto");
 }
+
+const entryLabel = (entry) =>
+  entry.label ||
+  {
+    movement: "La mia attività",
+    sleep: "Il mio riposo",
+    mindful: "Pausa per te",
+    water: "Un bicchiere d’acqua",
+  }[entry.type] ||
+  "Pasto";
 
 export function entryList(entries, { title, text, action = "" } = {}) {
   return entries.length
@@ -112,7 +122,7 @@ export function entryList(entries, { title, text, action = "" } = {}) {
         .reverse()
         .map(
           (e) =>
-            `<li class="list-row items-center px-0">${avatar(icon({ meal: "chart-pie", movement: "bolt", sleep: "moon", mindful: "face-smile", water: "beaker" }[e.type]), wellnessPalette[entryCategory[e.type] || "alimentazione"].avatar)}<div class="min-w-0"><strong class="block break-words font-semibold [overflow-wrap:anywhere]">${esc(e.label || { sleep: "Il mio riposo", mindful: "Pausa di respirazione", water: "Un bicchiere d’acqua" }[e.type])}</strong><span class="mt-1 block text-xs text-base-content/85">${entryDetails(e)}</span>${e.notes ? `<p class="mt-2 whitespace-pre-wrap break-words text-xs text-base-content/85 [overflow-wrap:anywhere]">${esc(e.notes)}</p>` : ""}</div><div class="flex flex-col sm:flex-row"><button class="btn btn-ghost btn-circle min-h-11 min-w-11" data-action="edit-entry" data-id="${esc(e.id)}" aria-label="Modifica ${esc(e.label || "registrazione")}">${icon("pencil-square")}</button><button class="btn btn-ghost btn-circle min-h-11 min-w-11" data-action="delete-entry" data-id="${esc(e.id)}" aria-label="Elimina ${esc(e.label || "registrazione")}">${icon("trash")}</button></div></li>`,
+            `<li class="list-row items-center px-0" tabindex="-1" data-entry-id="${esc(e.id)}">${avatar(icon({ meal: "chart-pie", movement: "bolt", sleep: "moon", mindful: "face-smile", water: "beaker" }[e.type]), wellnessPalette[entryCategory[e.type] || "alimentazione"].avatar)}<div class="min-w-0"><strong class="block break-words font-semibold [overflow-wrap:anywhere]">${esc(entryLabel(e))}</strong><span class="mt-1 block text-xs text-base-content/90">${entryDetails(e)}</span>${e.notes ? `<p class="mt-2 whitespace-pre-wrap break-words text-xs text-base-content/90 [overflow-wrap:anywhere]">${esc(e.notes)}</p>` : ""}</div><div class="flex flex-col sm:flex-row"><button type="button" class="btn btn-ghost btn-circle min-h-11 min-w-11" data-action="edit-entry" data-id="${esc(e.id)}" aria-label="Modifica ${esc(entryLabel(e))}, ${entryDetails(e)}${e.date ? ` del ${esc(e.date)}` : ""}">${icon("pencil-square")}</button><button type="button" class="btn btn-ghost btn-circle min-h-11 min-w-11" data-action="delete-entry" data-id="${esc(e.id)}" aria-label="Elimina ${esc(entryLabel(e))}, ${entryDetails(e)}${e.date ? ` del ${esc(e.date)}` : ""}">${icon("trash")}</button></div></li>`,
         )
         .join("")}</ul>`
     : empty(

@@ -117,15 +117,17 @@ export function normalizedReadings(raw, today = currentDate()) {
 
 /** The period includes today and uses calendar dates; there are no inferred measurements. */
 export function glucoseReport(records, period = 7, today = currentDate()) {
-  const days = Number(period) === 30 ? 30 : 7;
+  const days = period === "all" ? "all" : Number(period) === 30 ? 30 : 7;
   if (!validDay(today))
     throw new Error("Scegli una data valida per il riepilogo.");
+  const normalized = normalizedReadings(records, today);
   const start = new Date(`${today}T12:00:00Z`);
-  start.setUTCDate(start.getUTCDate() - days + 1);
-  const from = start.toISOString().slice(0, 10),
-    readings = normalizedReadings(records, today).filter(
-      (reading) => reading.date >= from,
-    ),
+  if (days !== "all") start.setUTCDate(start.getUTCDate() - days + 1);
+  const from =
+      days === "all"
+        ? normalized.at(-1)?.date || today
+        : start.toISOString().slice(0, 10),
+    readings = normalized.filter((reading) => reading.date >= from),
     values = readings.map((reading) => reading.value);
   return {
     period: days,

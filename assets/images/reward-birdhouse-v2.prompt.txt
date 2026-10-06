@@ -1,0 +1,9 @@
+Use case: illustration-story.
+Asset type: a single finished transparent reward illustration for PREVEDIApp, matching its Terra botanical wellness website.
+Scene/backdrop: genuine transparent alpha around the entire isolated subject, no landscape, no background fill, no circle or badge.
+Style/medium: warm botanical storybook gouache illustration with simple rounded organic silhouettes, confident smooth dark earthy-brown outlines, restrained soft flat shading, matte colors, a very light hand-painted texture. Match a friendly illustrated pinecone mascot and the site's botanical potted-plant illustrations. The result must look like a member of one consistent illustration family, never a realistic object or a 3D render.
+Color palette: leaf green #4A7C59, sage green, earthy brown #6B6358 outlines, muted honey ochre #C4A66A, warm ivory #F5F4EF; winter accents only muted dusty pale blue #A8C6CC. Keep saturation calm and natural.
+Composition/framing: square canvas, one centered compact subject group filling about 78 percent of the canvas with balanced transparent padding on all four sides; complete silhouette, broad recognizable forms readable at 80 px. Consistent medium outline weight, simple details, no excessively tiny decoration.
+Mood: gentle, familiar, calm and welcoming, softly shaded with no dramatic lighting.
+Constraints: no text, letters, numerals, logo, watermark, interface, border, frame, solid background, painted checkerboard, photorealism, 3D plastic, glassy gloss, cinematic depth of field, sparkly lens effects or long cast shadows. Objects have no faces; only the explicitly requested animal may have a friendly face. Generate one illustration, not a sheet or grid.
+Subject: One small rustic wooden birdhouse with a sage green sloped roof, warm honey-brown timber, circular dark opening and a short perch. A short leafy twig tucked near the base, minimal woodgrain. Entire birdhouse isolated and readable, no bird needed, no scenery.

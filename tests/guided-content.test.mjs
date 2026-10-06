@@ -69,12 +69,13 @@ test("Routine registration requires a selection and movement detail shows record
   const none = wakeup({
     ui: { guided: { exerciseIds: ["unknown"], exerciseMinutes: 5 } },
   });
-  assert.match(none, /data-action="wake-save"[^>]*disabled/);
+  assert.match(none, /data-action="practice-start"[^>]*disabled/);
   const chosen = wakeup({
     ui: { guided: { exerciseIds: ["collo"], exerciseMinutes: 12 } },
   });
-  assert.match(chosen, /id="wake-minutes"[^>]*value="12"/);
-  assert.doesNotMatch(chosen, /data-action="wake-save"[^>]*disabled/);
+  assert.match(chosen, /data-action="practice-start"[^>]*data-mode="review"/);
+  assert.doesNotMatch(chosen, /data-action="practice-start"[^>]*disabled/);
+  assert.doesNotMatch(chosen, /id="practice-minutes"/);
   const state = initialState();
   state.entries.push({
     id: "walk",

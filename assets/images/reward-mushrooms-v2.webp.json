@@ -1,0 +1,15 @@
+{
+  "id": "mushrooms",
+  "name": "Un angolo di sottobosco",
+  "generator": "OpenAI built-in imagegen",
+  "prompt": "Use case: illustration-story.\nAsset type: a single finished transparent reward illustration for PREVEDIApp, matching its Terra botanical wellness website.\nScene/backdrop: genuine transparent alpha around the entire isolated subject, no landscape, no background fill, no circle or badge.\nStyle/medium: warm botanical storybook gouache illustration with simple rounded organic silhouettes, confident smooth dark earthy-brown outlines, restrained soft flat shading, matte colors, a very light hand-painted texture. Match a friendly illustrated pinecone mascot and the site's botanical potted-plant illustrations. The result must look like a member of one consistent illustration family, never a realistic object or a 3D render.\nColor palette: leaf green #4A7C59, sage green, earthy brown #6B6358 outlines, muted honey ochre #C4A66A, warm ivory #F5F4EF; winter accents only muted dusty pale blue #A8C6CC. Keep saturation calm and natural.\nComposition/framing: square canvas, one centered compact subject group filling about 78 percent of the canvas with balanced transparent padding on all four sides; complete silhouette, broad recognizable forms readable at 80 px. Consistent medium outline weight, simple details, no excessively tiny decoration.\nMood: gentle, familiar, calm and welcoming, softly shaded with no dramatic lighting.\nConstraints: no text, letters, numerals, logo, watermark, interface, border, frame, solid background, painted checkerboard, photorealism, 3D plastic, glassy gloss, cinematic depth of field, sparkly lens effects or long cast shadows. Objects have no faces; only the explicitly requested animal may have a friendly face. Generate one illustration, not a sheet or grid.\nSubject: A compact woodland grouping of three rounded mushrooms with warm ochre and terracotta caps, cream stems, a little moss and two small leafy sprigs. Mushroom forms are bold and simple, no red saturated cartoon caps, no characters, no forest backdrop.",
+  "transparent_background": true,
+  "master": "artwork/rewards-v2/mushrooms.png",
+  "file": "assets/images/reward-mushrooms-v2.webp",
+  "createdAt": "2026-10-06",
+  "width": 640,
+  "height": 640,
+  "bytes": 91750,
+  "sha256": "126702cfe488761884de226bcdd6b665fcf43b66ef7ddcfea57f9c7931deb3ec",
+  "transformation": "Mechanical resize to 640x640 and WebP encoding at quality 88; alpha preserved, no artistic post-processing."
+}

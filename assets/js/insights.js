@@ -1,11 +1,12 @@
-import { localDate, missions, foods, quizSets } from "../data.js";
+import { localDate, missions, quizSets } from "../data.js";
+import { plateFoods } from "./nutrition-catalog.js";
 import { shiftDate } from "./records.js";
 
 export const habitLabels = {
   movement: { label: "Movimento", unit: "min", icon: "bolt", goal: "movement" },
   sleep: { label: "Riposo", unit: "ore", icon: "moon", goal: "sleep" },
   water: { label: "Acqua", unit: "bicchieri", icon: "beaker", goal: "water" },
-  mindful: { label: "Respirazione", unit: "min", icon: "face-smile" },
+  mindful: { label: "Pause per te", unit: "min", icon: "face-smile" },
 };
 
 export function habitReport(
@@ -122,7 +123,9 @@ export function pantryPlate(ids) {
   const groups = Object.fromEntries(
     ["vegetables", "carbs", "protein"].map((group) => [
       group,
-      foods.filter((food) => ids.includes(food.id) && food.group === group),
+      plateFoods.filter(
+        (food) => ids.includes(food.id) && food.plateGroup === group,
+      ),
     ]),
   );
   const missing = Object.keys(groups).filter((group) => !groups[group].length);

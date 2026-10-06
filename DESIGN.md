@@ -112,28 +112,28 @@ components:
     typography: '{typography.button}'
     rounded: '{rounded.field}'
     padding: 0 1rem
-    height: 2.5rem
+    height: 2.75rem
   button-outline:
     backgroundColor: transparent
     textColor: '{colors.base-content}'
     typography: '{typography.button}'
     rounded: '{rounded.field}'
     padding: 0 1rem
-    height: 2.5rem
+    height: 2.75rem
   button-ghost:
     backgroundColor: transparent
     textColor: '{colors.base-content}'
     typography: '{typography.button}'
     rounded: '{rounded.field}'
     padding: 0 1rem
-    height: 2.5rem
+    height: 2.75rem
   button-soft:
     backgroundColor: color-mix(in oklab, var(--color-base-content) 8%, var(--color-base-100))
     textColor: '{colors.base-content}'
     typography: '{typography.button}'
     rounded: '{rounded.field}'
     padding: 0 1rem
-    height: 2.5rem
+    height: 2.75rem
   card:
     backgroundColor: '{colors.base-100}'
     textColor: '{colors.base-content}'
@@ -170,14 +170,14 @@ components:
     textColor: '{colors.base-content}'
     rounded: '{rounded.field}'
     padding: 0 0.75rem
-    height: 2.5rem
+    height: 2.75rem
     width: 100%
   select:
     backgroundColor: '{colors.base-100}'
     borderColor: color-mix(in oklab, var(--color-secondary) 75%, transparent)
     textColor: '{colors.base-content}'
     rounded: '{rounded.field}'
-    height: 2.5rem
+    height: 2.75rem
     width: 100%
   avatar-placeholder:
     backgroundColor: color-mix(in oklab, var(--color-primary) 10%, transparent)
@@ -273,9 +273,9 @@ La palette ha la materia discreta di un quaderno chiaro e di un giardino: colori
 ### Neutral
 
 - **Carta chiara** (`base-200`): fondo del workspace; **bianco** (`base-100`): sidebar, card e campi. **Linea naturale** (`base-300`): bordi della struttura e separazioni. Il bordo delle card conserva il trattamento nativo daisyUI su `base-200`.
-- **Inchiostro naturale** (`base-content`, `neutral`): testo principale, allineato al neutro confermato in `PRODUCT.md`. Il testo di supporto, i titoli di gruppo, le descrizioni statistiche e i placeholder abilitati usano `base-content` al (85%); non aggiungere un token `muted` separato.
+- **Inchiostro naturale** (`base-content`, `neutral`): testo principale, allineato al neutro confermato in `PRODUCT.md`. Il testo di supporto, i titoli di gruppo, le descrizioni statistiche e i placeholder abilitati usano `base-content` al (90%); non aggiungere un token `muted` separato.
 - `info`, `success`, `warning` ed `error` mantengono i ruoli semantici del tema. Gli errori di modulo e la cancellazione usano `error`; esiti e suggerimenti usano le rispettive varianti soft degli alert. Gli avvisi soft usano `warning-content` scuro, perché `warning` sul fondo chiaro non raggiunge il contrasto del testo.
-- Focus e caret usano `primary`. La selezione del testo usa `primary` e `primary-content`. Le coppie contenuto dei colori pieni restano quelle definite dal tema.
+- Il focus usa un contorno `neutral` con separazione bianca, leggibile anche sui controlli pieni; il caret usa `primary`. La selezione del testo usa `primary` e `primary-content`. Le coppie contenuto dei colori pieni restano quelle definite dal tema.
 
 **The Terra Continuity Rule.** Usa il verde pieno per azione, selezione e messaggi personali; oro per foglie e Pigna; tinte stabili per le categorie. Conserva i valori del tema Terra e accompagna ogni significato con testo, icona o posizione.
 
@@ -334,15 +334,15 @@ La profondità viene principalmente da fondo, bordo e spazio. Le card ordinarie 
 ### Shadow Vocabulary
 
 - **Dialogo:** (`0 25px 50px -12px oklch(0% 0 0 / .25)`), ombra nativa del modal-box; il livello modale usa il backdrop della libreria al (40%).
-- **Toast:** (`0 1px 3px 0 #0000001a, 0 1px 2px -1px #0000001a`), utility `shadow-sm` sul feedback temporaneo. Gli alert soft ordinari non aggiungono ombra.
+- **Toast:** (`0 1px 3px 0 #0000001a, 0 1px 2px -1px #0000001a`), utility `shadow-sm` sul feedback persistente e chiudibile. Gli alert soft ordinari non aggiungono ombra.
 
-**The Quiet Surface Rule.** Le card si separano con tono e bordo. Le ombre documentate restano al dialogo e al feedback temporaneo.
+**The Quiet Surface Rule.** Le card si separano con tono e bordo. Le ombre documentate restano al dialogo e al feedback persistente.
 
 Gli stati dei componenti conservano i tempi daisyUI: pulsanti (200ms) con curva `cubic-bezier(0, 0, .2, 1)` e pressione verticale (0.5px); barre native (300ms) quando il browser supporta il relativo pseudo-elemento e la preferenza consente movimento. Drawer, dialoghi, card e dock mantengono le proprie transizioni della libreria.
 
 La respirazione anima l’avatar nativo con Pigna mediante una Web Animation: ciclo (8s), scala da (0.8) a (1) e opacità da (0.85) a (1). Ogni metà usa ease-in-out, con tempo complessivo lineare, così l’inversione a quattro secondi rimane morbida e coincide con Inspira/Espira. La fase e il tempo restano testo fermo; il radial-progress nativo mostra la sessione completa. Il timer conserva i millisecondi e riposiziona l’animazione in pausa, ripresa e rimontaggio della pagina; non cambia il colore durante il ciclo.
 
-La regola globale `prefers-reduced-motion: reduce` riduce animazioni e transizioni a (0.001ms), limita le iterazioni a una e usa scorrimento automatico. La guida osserva la stessa preferenza per cancellare la Web Animation e conservare una posa statica, fase e countdown. Il toggle nativo Animazione consente di fermare il movimento; a scheda nascosta e fuori vista l’animazione è sospesa, mentre il timer mantiene il proprio tempo.
+La regola `prefers-reduced-motion: reduce` usa scorrimento automatico, disattiva le transizioni dei componenti nativi interessati, elimina gli spostamenti di pressione e apertura del dialogo e mantiene un indicatore di caricamento statico. La guida osserva la stessa preferenza per cancellare la Web Animation e conservare una posa statica, fase e countdown. Il toggle nativo Animazione consente di fermare il movimento; a scheda nascosta e fuori vista l’animazione è sospesa, mentre il timer mantiene il proprio tempo.
 
 ## Shapes
 
@@ -376,7 +376,7 @@ Il banner Pigna usa la variante `card-side` quando lo spazio lo consente, figure
 
 ### Inputs / Fields
 
-Moduli raggruppati con `fieldset` e `fieldset-legend`; etichette vere con `label`, campi `input` e `select`, scelte `radio` e `checkbox`. I campi ordinari sono bianchi, raggio field, altezza (40px) e padding laterale nativo; le utility espandono la larghezza al contenitore. I bordi dei controlli usano `secondary/75`, e radio/checkbox selezionati riprendono `primary`. I placeholder abilitati usano `base-content` al (85%). Le label che contengono i controlli usano testo principale; il testo di aiuto mantiene il (85%).
+Moduli raggruppati con `fieldset` e `fieldset-legend`; etichette vere con `label`, campi `input` e `select`, scelte `radio` e `checkbox`. I campi ordinari sono bianchi, raggio field, altezza minima (44px) e padding laterale nativo; le utility espandono la larghezza al contenitore. Il testo dei campi è di (16px), per evitare lo zoom automatico su iOS. I bordi dei controlli usano `secondary/75`, e radio/checkbox selezionati riprendono `primary`. I placeholder abilitati usano `base-content` al (90%). Le label che contengono i controlli usano testo principale; il testo di aiuto mantiene il (90%).
 
 Errori vicini ai campi in `alert alert-error alert-soft` con `role="alert"`. I contenitori delle radio del test ricevono bordo primario e fondo primario al (5%) quando il controllo è selezionato, attraverso le utility di stato. Gli attributi `required`, `disabled` e i controlli nativi conservano la semantica del modulo.
 
@@ -384,7 +384,7 @@ Errori vicini ai campi in `alert alert-error alert-soft` con `role="alert"`. I c
 
 Desktop e menu espanso usano `drawer` con toggle, content, side e overlay. Le destinazioni sono voci `menu` con titolo di gruppo e stato `menu-active`; la destinazione corrente applica fondo primario pieno, `primary-content` e `aria-current="page"`. Le righe hanno altezza minima (44px). Il navbar usa le parti start/end; notifiche tramite `indicator`, profilo tramite avatar.
 
-Sotto `lg`, il dock usa pulsanti nativi con `dock-label` e `dock-active`: Percorso, Giardino, Pigna, Community e Profilo. Attività, diario e apprendimento sono ricondotti a Percorso nel dock. Il drawer completo resta disponibile e si chiude dopo la navigazione. Focus visibile e nome accessibile restano necessari anche sulle azioni solo icona.
+Sotto `lg`, il dock usa link nativi con `dock-label` e `dock-active`: Percorso, Giardino, Pigna, Community e Profilo. Attività, diario e apprendimento sono ricondotti a Percorso nel dock. Il drawer completo resta disponibile e si chiude dopo la navigazione. Il pulsante nativo di apertura espone `aria-expanded`; su mobile il pannello è un dialogo con focus contenuto, chiusura con Escape e sfondo `inert`. Cambiare larghezza ripristina una destinazione visibile. Focus visibile e nome accessibile restano necessari anche sulle azioni solo icona.
 
 ### Missioni quotidiane ed elenchi
 
@@ -396,7 +396,7 @@ Nella community, Anna, Marco ed Elena usano ritratti illustrati fittizi con colo
 
 L'ordine visivo è titolo, descrizione dove presente, illustrazione, eventuale decorazione, gruppo crescita. **Il livello è dentro il gruppo crescita sotto l'illustrazione**, prima dell'etichetta del prossimo livello e della barra. Mantieni insieme livello, contatore e barra anche su telefono; non riportare il livello sopra il titolo.
 
-Le barre sono `progress progress-primary`, a tutta larghezza, con altezza nativa (8px) e nome accessibile. Numeri e testo rendono lo stato comprensibile senza il solo colore. Metriche e proporzioni del piatto usano `stats`, `stat`, `stat-title`, `stat-value` e `stat-desc`; le etichette di supporto usano testo al (85%).
+Le barre sono `progress progress-primary`, a tutta larghezza, con altezza nativa (8px) e nome accessibile. Numeri e testo rendono lo stato comprensibile senza il solo colore. Metriche e proporzioni del piatto usano `stats`, `stat`, `stat-title`, `stat-value` e `stat-desc`; le etichette di supporto usano testo al (90%).
 
 ### Chat e respirazione
 
@@ -412,7 +412,7 @@ La respirazione usa `radial-progress` (208px, 224px da 640px; spessore 3px) e `a
 
 Dialogo HTML nativo con `modal`, `modal-box`, `modal-backdrop` e `modal-action`; apertura tramite `showModal()` e form di chiusura. Il titolo è collegato con `aria-labelledby`. Il modal-box conserva taglia, scorrimento, angoli e livello della libreria.
 
-Avvisi, errori ed esiti usano `alert` e varianti semantiche soft; `alert-warning` applica `text-warning-content` per un inchiostro leggibile. Il toast è il contenitore daisyUI con alert success interno, utility di posizione e ombra piccola; compare per (4500ms) ed è annunciato con `role="status"` e `aria-live="polite"`. Separazioni, fonti e fondo pagina usano `divider`, `link` e `footer` reali.
+Avvisi, errori ed esiti usano `alert` e varianti semantiche soft; `alert-warning` applica `text-warning-content` per un inchiostro leggibile. Il toast è il contenitore daisyUI con alert interno, utility di posizione e ombra piccola: resta disponibile fino alla chiusura esplicita o al feedback successivo. L’annuncio passa dalla regione separata `#app-status`, con `role="status"` e `aria-live="polite"`, senza rileggere l’intero contenitore. Quando pertinenti, le azioni aprono il giorno registrato nel diario, esportano una copia o annullano la rimozione. L’annullamento rimane disponibile finché la relativa conferma è visibile; chiuderla o sostituirla con un nuovo feedback termina questa possibilità. Separazioni, fonti e fondo pagina usano `divider`, `link` e `footer` reali.
 
 ## Do's and Don'ts
 
@@ -425,7 +425,7 @@ Avvisi, errori ed esiti usano `alert` e varianti semantiche soft; `alert-warning
 - **Do** mantieni Heroicons outline con tratto coerente e testo accessibile per le azioni solo icona.
 - **Do** applica le soglie responsive minime e preserva il dock con il suo spazio inferiore.
 - **Do** conserva focus visibile, etichette dei campi, numeri del progresso e riduzione del movimento.
-- **Do** usa testo `base-content` al (85%) per supporto e placeholder abilitati; conserva gli inchiostri leggibili dei badge soft.
+- **Do** usa testo `base-content` al (90%) per supporto e placeholder abilitati; conserva gli inchiostri leggibili dei badge soft.
 - **Do** riusa i PNG di Alberello e Pigna senza deformarli, mantenendo la provenienza degli asset.
 
 ### Don't:

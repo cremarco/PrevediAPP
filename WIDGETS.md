@@ -1,5 +1,7 @@
 # Widget animati delle azioni
 
+Gli ingredienti illustrati di Frigo e piatto sono ora quindici: il [completamento delle sei immagini mancanti](FOOD-ASSETS.md) conserva l’atlante originale e aggiunge sei oggetti trasparenti nello stesso stile.
+
 Estensione del 6 ottobre 2026. I widget riprendono piatto, ripiani e guida del respiro dal [progetto Stitch](https://stitch.withgoogle.com/projects/4965067135037654911), conservando Terra, daisyUI 5, Heroicons e il modello locale dell’app.
 
 ## Azioni e stati

@@ -26,6 +26,44 @@ export const foodCategories = {
   drinks: "Bevande",
 };
 export const catalogFoods = () => [...foods, ...foodExtras];
+// Plate placement is separate from discovery categories and the v1 pantry schema.
+// Chickpeas occupy the plant-protein sector of this space model; their catalog
+// category remains legumes, and this placement does not describe nutrient ratios.
+export const plateFoods = catalogFoods()
+  .filter(
+    (food) =>
+      ["vegetables", "carbs", "protein"].includes(food.group) ||
+      food.id === "ceci",
+  )
+  .map((food) => ({
+    ...food,
+    plateGroup: food.id === "ceci" ? "protein" : food.group,
+  }));
+export const foodById = (id) => catalogFoods().find((food) => food.id === id);
+
+export function catalogPlateBalance(items = []) {
+  const groups = { vegetables: 0, carbs: 0, protein: 0 };
+  for (const id of items) {
+    const food = plateFoods.find((item) => item.id === id);
+    if (food) groups[food.plateGroup]++;
+  }
+  const count = Object.values(groups).reduce((sum, value) => sum + value, 0);
+  return {
+    groups,
+    percent: Object.fromEntries(
+      Object.entries(groups).map(([group, value]) => [
+        group,
+        count ? Math.round((value / count) * 100) : 0,
+      ]),
+    ),
+    balanced:
+      items.length === 4 &&
+      count === 4 &&
+      groups.vegetables === 2 &&
+      groups.carbs === 1 &&
+      groups.protein === 1,
+  };
+}
 const normalize = (value) =>
   String(value || "")
     .normalize("NFD")
@@ -99,6 +137,38 @@ export const recipes = [
 ];
 export const recipeById = (id) =>
   recipes.find((recipe) => recipe.id === id) || recipes[0];
+export function recipeStepsFor(id, indices = []) {
+  const recipe = recipes.find((item) => item.id === id);
+  if (!recipe || !Array.isArray(indices)) return [];
+  return [...new Set(indices)].filter(
+    (index) =>
+      Number.isInteger(index) && index >= 0 && index < recipe.steps.length,
+  );
+}
+
+// Preparation checklists are transient UI state, separate for each recipe.
+export function toggleRecipeStep(stepsByRecipe, id, index) {
+  const recipe = recipes.find((item) => item.id === id);
+  if (
+    !recipe ||
+    !stepsByRecipe ||
+    typeof stepsByRecipe !== "object" ||
+    !Number.isInteger(index) ||
+    index < 0 ||
+    index >= recipe.steps.length
+  )
+    return false;
+  const current = recipeStepsFor(id, stepsByRecipe[id]);
+  stepsByRecipe[id] = current.includes(index)
+    ? current.filter((value) => value !== index)
+    : [...current, index];
+  return true;
+}
+
+export function recipePantryFoods(id) {
+  const recipe = recipes.find((item) => item.id === id);
+  return recipe ? recipe.pantry.map(foodById).filter(Boolean) : [];
+}
 export function searchRecipes(query = "", filter = "all") {
   const q = normalize(query);
   return recipes.filter(

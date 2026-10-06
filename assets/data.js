@@ -224,6 +224,7 @@ export const rewards = [
     description: "Un piccolo rifugio per il tuo Alberello.",
     cost: 60,
     icon: "home",
+    image: "assets/images/reward-nest-v2.webp",
   },
   {
     id: "mushrooms",
@@ -231,6 +232,7 @@ export const rewards = [
     description: "Funghi e nuove storie ai piedi dell’albero.",
     cost: 100,
     icon: "gift",
+    image: "assets/images/reward-mushrooms-v2.webp",
   },
   {
     id: "stars",
@@ -238,6 +240,7 @@ export const rewards = [
     description: "Una luce gentile nel tuo giardino.",
     cost: 160,
     icon: "sparkles",
+    image: "assets/images/reward-stars-v2.webp",
   },
   {
     id: "birdhouse",
@@ -246,7 +249,7 @@ export const rewards = [
     cost: 120,
     icon: "home",
     theme: "nature",
-    image: "assets/images/reward-birdhouse-v1.webp",
+    image: "assets/images/reward-birdhouse-v2.webp",
     preview: true,
   },
   {
@@ -256,7 +259,7 @@ export const rewards = [
     cost: 140,
     icon: "gift",
     theme: "nature",
-    image: "assets/images/reward-pinecones-v1.webp",
+    image: "assets/images/reward-pinecones-v2.webp",
     preview: true,
   },
   {
@@ -266,7 +269,7 @@ export const rewards = [
     cost: 150,
     icon: "gift",
     theme: "winter",
-    image: "assets/images/reward-scarf.webp",
+    image: "assets/images/reward-scarf-v2.webp",
     preview: true,
   },
   {
@@ -276,7 +279,7 @@ export const rewards = [
     cost: 200,
     icon: "sparkles",
     theme: "winter",
-    image: "assets/images/reward-ice.webp",
+    image: "assets/images/reward-ice-v2.webp",
     preview: true,
   },
   {
@@ -286,7 +289,7 @@ export const rewards = [
     cost: 180,
     icon: "cloud",
     theme: "winter",
-    image: "assets/images/reward-snow.webp",
+    image: "assets/images/reward-snow-v2.webp",
     preview: true,
   },
   {
@@ -296,7 +299,7 @@ export const rewards = [
     cost: 250,
     icon: "heart",
     theme: "winter",
-    image: "assets/images/reward-fox.webp",
+    image: "assets/images/reward-fox-v2.webp",
     preview: true,
   },
 ];

@@ -1,6 +1,7 @@
 import { foods } from "../../data.js";
+import { plateFoods } from "../nutrition-catalog.js";
 import { esc, icon } from "./components.js";
-import { foodPicture } from "./food-art.js";
+import { foodPicture, hasFoodPicture } from "./food-art.js";
 
 export const plateGroups = [
   { id: "vegetables", label: "Verdure", portions: 2 },
@@ -15,9 +16,11 @@ export function plateSlots(items = []) {
   );
   const excess = [];
   items.forEach((id, index) => {
-    const food = foods.find((item) => item.id === id);
+    const food = plateFoods.find((item) => item.id === id);
     if (!food) return;
-    const slot = slots.find((item) => item.group === food.group && !item.food);
+    const slot = slots.find(
+      (item) => item.group === food.plateGroup && !item.food,
+    );
     if (slot) Object.assign(slot, { food, index });
     else excess.push({ food, index });
   });
@@ -54,15 +57,15 @@ export function plateBoard(items = [], target = "all") {
             ? "bg-accent/15 text-base-content"
             : "bg-secondary/10 text-base-content";
       const action = cell.food
-        ? `data-action="plate-remove" data-index="${cell.index}" data-item-index="${cell.index}" data-food="${cell.food.id}" aria-label="Rimuovi una porzione di ${esc(cell.food.name)} dal settore ${label}"`
-        : `data-action="plate-target" data-group="${cell.group}" aria-label="Scegli gli ingredienti per ${label.toLocaleLowerCase("it-IT")}" aria-pressed="${selected}"`;
+        ? `data-action="plate-remove" data-index="${cell.index}" data-item-index="${cell.index}" data-food="${cell.food.id}" aria-label="Rimuovi una porzione di ${esc(cell.food.name)} dal settore ${label}${!cell.matches ? `, porzione del gruppo ${groupLabel(cell.food.plateGroup).toLocaleLowerCase("it-IT")}` : ""}"`
+        : `data-action="plate-target" data-group="${cell.group}" aria-label="Scegli gli ingredienti per ${label.toLocaleLowerCase("it-IT")}" aria-pressed="${selected}" aria-controls="plate-foods-target"`;
       const content = cell.food
         ? `${foodPicture(cell.food.id, "size-12 sm:size-16")}<span class="max-w-full text-xs leading-tight font-semibold">${esc(cell.food.name)}</span><span class="flex items-center gap-1 text-xs leading-tight">${icon("x-mark", "size-3")}Rimuovi</span>`
         : `${icon("plus", "size-6")}<span class="max-w-full text-xs leading-tight font-semibold">${label}</span><span class="text-xs leading-tight">Scegli</span>`;
       return `<button class="btn btn-ghost h-full min-h-11 min-w-0 flex-col flex-nowrap gap-1 rounded-none whitespace-normal ${padding[slotNumber]} ${skin} ${selected && !cell.food ? "btn-active" : ""} focus-visible:outline-offset-[-5px]" data-plate-slot="${slotNumber}" data-plate-group="${cell.group}" data-plate-match="${cell.matches}" ${action}>${content}</button>`;
     })
     .join("");
-  return `<div class="flex flex-col items-center gap-4" data-widget="plate"><div class="mask mask-circle grid aspect-square w-full max-w-96 grid-cols-2 grid-rows-2 gap-1 bg-base-300 p-1" role="group" aria-label="Il tuo piatto: metà verdure, un quarto carboidrati e un quarto proteine">${sectors}</div><p class="text-center text-sm text-base-content/85">Tocca uno spazio vuoto per scegliere il gruppo. Tocca un ingrediente nel piatto per rimuoverlo.</p>${slots.some((cell) => !cell.matches) ? '<p class="text-center text-sm text-base-content/85">Uno spazio colorato indica una porzione di un altro gruppo. Puoi rimuoverla e riprovare.</p>' : ""}</div>`;
+  return `<div class="flex flex-col items-center gap-4" data-widget="plate"><div class="mask mask-circle grid aspect-square w-full max-w-96 grid-cols-2 grid-rows-2 gap-1 bg-base-300 p-1" role="group" aria-label="Il tuo piatto: metà verdure, un quarto carboidrati e un quarto proteine">${sectors}</div><p class="text-center text-sm text-base-content/90">Tocca uno spazio vuoto per scegliere il gruppo. Tocca un ingrediente nel piatto per rimuoverlo.</p>${slots.some((cell) => !cell.matches) ? '<p class="text-center text-sm text-base-content/90">Uno spazio colorato indica una porzione di un altro gruppo. Puoi rimuoverla e riprovare.</p>' : ""}</div>`;
 }
 
 export function ingredientPicker(items = [], target = "all") {
@@ -70,36 +73,40 @@ export function ingredientPicker(items = [], target = "all") {
   const filters = [{ id: "all", label: "Tutti" }, ...plateGroups]
     .map(
       (item) =>
-        `<button class="btn btn-sm join-item h-auto min-h-11 min-w-0 px-2 py-2 whitespace-normal ${group === item.id ? "btn-active" : "btn-outline"}" data-action="plate-target" data-group="${item.id}" aria-pressed="${group === item.id}">${item.label}</button>`,
+        `<button class="btn btn-sm join-item h-auto min-h-11 min-w-0 px-2 py-2 whitespace-normal ${group === item.id ? "btn-active" : "btn-outline"}" data-action="plate-target" data-group="${item.id}" aria-pressed="${group === item.id}" aria-controls="plate-foods-target">${item.label}</button>`,
     )
     .join("");
   const sections = plateGroups
     .filter((item) => group === "all" || item.id === group)
     .map((item) => {
       const count = items.filter(
-        (id) => foods.find((food) => food.id === id)?.group === item.id,
+        (id) =>
+          plateFoods.find((food) => food.id === id)?.plateGroup === item.id,
       ).length;
-      return `<fieldset class="fieldset gap-3 p-0"><legend class="fieldset-legend text-sm">${item.label} · ${count}/${item.portions} ${item.portions === 1 ? "porzione" : "porzioni"}</legend><div class="grid grid-cols-2 gap-2 min-[360px]:grid-cols-3">${foods
-        .filter((food) => food.group === item.id)
+      return `<fieldset class="fieldset gap-3 p-0"><legend class="fieldset-legend text-sm">${item.label} · ${count}/${item.portions} ${item.portions === 1 ? "porzione" : "porzioni"}</legend><div class="grid grid-cols-2 gap-2 min-[360px]:grid-cols-3">${plateFoods
+        .filter((food) => food.plateGroup === item.id)
         .map((food) => {
           const portions = items.filter((id) => id === food.id).length;
-          return `<button class="btn btn-outline h-auto min-h-32 min-w-0 flex-col gap-2 px-2 py-3 text-xs whitespace-normal sm:text-sm ${portions ? "btn-active" : ""}" data-action="plate-add" data-id="${food.id}" data-food="${food.id}" aria-label="Aggiungi una porzione di ${esc(food.name)}${portions ? `, ${portions} ${portions === 1 ? "porzione già scelta" : "porzioni già scelte"}` : ""}" ${items.length >= 4 ? "disabled" : ""}>${foodPicture(food.id, "size-14 sm:size-16")}<span>${esc(food.name)}</span><span class="flex max-w-full items-center gap-1 text-xs">${icon("plus", "size-3")}<span class="min-w-0">${portions ? `${portions} nel piatto` : "Aggiungi"}</span></span></button>`;
+          return `<button class="btn btn-outline h-auto ${hasFoodPicture(food.id) ? "min-h-32" : "min-h-20"} min-w-0 flex-col gap-2 px-2 py-3 text-xs whitespace-normal sm:text-sm ${portions ? "btn-active" : ""}" data-action="plate-add" data-id="${food.id}" data-food="${food.id}" aria-label="Aggiungi una porzione di ${esc(food.name)}${portions ? `, ${portions} ${portions === 1 ? "porzione già scelta" : "porzioni già scelte"}` : ""}" ${items.length >= 4 ? "disabled" : ""}>${foodPicture(food.id, "size-14 sm:size-16")}<span>${esc(food.name)}</span><span class="flex max-w-full items-center gap-1 text-xs">${icon("plus", "size-3")}<span class="min-w-0">${portions ? `${portions} nel piatto` : "Aggiungi"}</span></span></button>`;
         })
         .join("")}</div></fieldset>`;
     })
     .join("");
-  return `<div class="join join-vertical w-full sm:join-horizontal" role="group" aria-label="Mostra ingredienti del gruppo">${filters}</div><div id="plate-foods-target" class="grid gap-5" tabindex="-1" aria-label="Ingredienti ${groupLabel(group).toLocaleLowerCase("it-IT")}">${sections}</div>`;
+  return `<div class="join join-vertical w-full sm:join-horizontal" role="group" aria-label="Mostra ingredienti del gruppo">${filters}</div><div id="plate-foods-target" class="grid gap-5" tabindex="-1" role="group" aria-label="${group === "all" ? "Tutti gli ingredienti" : `Ingredienti del gruppo ${groupLabel(group).toLocaleLowerCase("it-IT")}`}">${sections}</div>`;
 }
 
 export function fridgeMarket(ids = []) {
   return plateGroups
     .map(
       (group) =>
-        `<fieldset class="fieldset gap-3 p-0"><legend class="fieldset-legend text-sm">${group.label}</legend><div class="grid grid-cols-2 gap-2 min-[360px]:grid-cols-3">${foods
-          .filter((food) => food.group === group.id)
+        `<fieldset class="fieldset gap-3 p-0"><legend class="fieldset-legend text-sm">${group.label}</legend><div class="grid grid-cols-2 gap-2 min-[360px]:grid-cols-3">${plateFoods
+          .filter((food) => food.plateGroup === group.id)
           .map((food) => {
             const chosen = ids.includes(food.id);
-            return `<button class="btn btn-outline h-auto min-h-32 min-w-0 flex-col gap-2 px-2 py-3 text-xs whitespace-normal sm:text-sm ${chosen ? "btn-active" : ""}" data-action="fridge-toggle" data-id="${food.id}" data-market-food="${food.id}" data-food="${food.id}" aria-label="${chosen ? "Rimuovi dalla" : "Aggiungi alla"} dispensa ${esc(food.name)}" aria-pressed="${chosen}">${foodPicture(food.id, "size-14 sm:size-16")}<span>${esc(food.name)}</span><span class="flex max-w-full items-center gap-1 text-xs">${icon(chosen ? "check" : "plus", "size-3")}<span class="min-w-0">${chosen ? "Nel frigo" : "Aggiungi"}</span></span></button>`;
+            const action = foods.some((item) => item.id === food.id)
+              ? "fridge-toggle"
+              : "market-toggle";
+            return `<button class="btn btn-outline h-auto ${hasFoodPicture(food.id) ? "min-h-32" : "min-h-20"} min-w-0 flex-col gap-2 px-2 py-3 text-xs whitespace-normal sm:text-sm ${chosen ? "btn-active" : ""}" data-action="${action}" data-id="${food.id}" data-market-food="${food.id}" data-food="${food.id}" aria-label="${chosen ? "Rimuovi dalla" : "Aggiungi alla"} dispensa ${esc(food.name)}" aria-pressed="${chosen}">${foodPicture(food.id, "size-14 sm:size-16")}<span>${esc(food.name)}</span><span class="flex max-w-full items-center gap-1 text-xs">${icon(chosen ? "check" : "plus", "size-3")}<span class="min-w-0">${chosen ? "Nel frigo" : "Aggiungi"}</span></span></button>`;
           })
           .join("")}</div></fieldset>`,
     )
@@ -109,10 +116,10 @@ export function fridgeMarket(ids = []) {
 export function fridgeShelves(ids = []) {
   const shelves = ["vegetables", "protein", "carbs"]
     .map((group) => {
-      const ingredients = foods.filter(
-        (food) => food.group === group && ids.includes(food.id),
+      const ingredients = plateFoods.filter(
+        (food) => food.plateGroup === group && ids.includes(food.id),
       );
-      return `<li class="list-row grid-cols-1 gap-3 rounded-box bg-base-200/60 p-4" data-fridge-shelf="${group}"><div class="col-span-full grid min-w-0 gap-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="text-base">${group === "carbs" ? "Cereali e carboidrati" : groupLabel(group)}</h3><span class="badge badge-ghost" aria-label="${ingredients.length} ingredienti in questo ripiano">${ingredients.length}</span></div>${ingredients.length ? `<div class="grid grid-cols-2 gap-2 min-[360px]:grid-cols-3">${ingredients.map((food) => `<button class="btn btn-ghost h-auto min-h-28 min-w-0 flex-col gap-2 px-1 py-2 text-xs whitespace-normal" data-action="fridge-toggle" data-id="${food.id}" data-fridge-item="${food.id}" data-food="${food.id}" aria-label="Rimuovi dalla dispensa ${esc(food.name)}">${foodPicture(food.id, "size-12 sm:size-14")}<span>${esc(food.name)}</span><span class="flex items-center gap-1">${icon("x-mark", "size-3")}Rimuovi</span></button>`).join("")}</div>` : '<p class="text-sm text-base-content/85">Questo ripiano aspetta i tuoi ingredienti. Aggiungili dal mercato.</p>'}</div></li>`;
+      return `<li class="list-row grid-cols-1 gap-3 rounded-box bg-base-200/60 p-4" data-fridge-shelf="${group}"><div class="col-span-full grid min-w-0 gap-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="text-base">${group === "carbs" ? "Cereali e carboidrati" : groupLabel(group)}</h3><span class="badge badge-ghost">${ingredients.length}<span class="sr-only"> ${ingredients.length === 1 ? "ingrediente" : "ingredienti"} in questo ripiano</span></span></div>${ingredients.length ? `<div class="grid grid-cols-2 gap-2 min-[360px]:grid-cols-3">${ingredients.map((food) => `<button class="btn btn-ghost h-auto ${hasFoodPicture(food.id) ? "min-h-28" : "min-h-20"} min-w-0 flex-col gap-2 px-1 py-2 text-xs whitespace-normal" data-action="${foods.some((item) => item.id === food.id) ? "fridge-toggle" : "market-toggle"}" data-id="${food.id}" data-fridge-item="${food.id}" data-food="${food.id}" aria-label="Rimuovi dalla dispensa ${esc(food.name)}">${foodPicture(food.id, "size-12 sm:size-14")}<span>${esc(food.name)}</span><span class="flex items-center gap-1">${icon("x-mark", "size-3")}Rimuovi</span></button>`).join("")}</div>` : '<p class="text-sm text-base-content/90">Questo ripiano aspetta i tuoi ingredienti. Aggiungili dal mercato.</p>'}</div></li>`;
     })
     .join("");
   return `<ul class="list gap-4" data-widget="fridge">${shelves}</ul>`;

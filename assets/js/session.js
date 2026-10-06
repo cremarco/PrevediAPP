@@ -1,5 +1,6 @@
 import { initialFridgeGame } from "./nutrition-catalog.js";
 import { localDate } from "../data.js";
+import { initialPractice } from "./guided-flow.js";
 
 export const riskQuestions = [
   {
@@ -162,11 +163,12 @@ export const initialSession = () => {
     },
     guided: {
       exerciseIds: [],
-      exerciseMinutes: 5,
       routine: [],
       sessionId: "pace",
       category: "tutte",
     },
+    practices: { wakeup: initialPractice(), evening: initialPractice() },
+    pauseOutcomes: {},
     social: {
       query: "",
       category: "all",

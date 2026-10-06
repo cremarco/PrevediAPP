@@ -163,6 +163,45 @@ test("CSV quotes separators and newlines and neutralizes formula-like free text"
   assert.ok(!csv.includes("excluded"));
 });
 
+test("All-history includes older measurements and exports the same records", () => {
+  const records = [
+    reading("oldest", "2024-02-29"),
+    reading("older", "2026-08-01"),
+    reading("latest", today),
+    reading("future", "2026-10-07"),
+  ];
+  const report = glucoseReport(records, "all", today);
+  assert.equal(report.period, "all");
+  assert.equal(report.from, "2024-02-29");
+  assert.equal(report.to, today);
+  assert.equal(report.count, 3);
+  assert.deepEqual(
+    report.records.map((item) => item.id),
+    ["latest", "older", "oldest"],
+  );
+  const csv = glucoseCSV(report.records, today);
+  assert.ok(csv.includes("2024-02-29"));
+  assert.ok(csv.includes("2026-08-01"));
+  assert.ok(!csv.includes("2026-10-07"));
+  const empty = glucoseReport([], "all", today);
+  assert.deepEqual(
+    [empty.period, empty.from, empty.to, empty.count],
+    ["all", today, today, 0],
+  );
+});
+
+test("The all-history register keeps older records editable and exposes total capacity", () => {
+  const item = reading("older-record", "2024-02-29");
+  const html = glucose({
+    state: { glucoseReadings: [item] },
+    ui: { glucose: { period: "all" } },
+  });
+  assert.match(html, /value="all" selected/);
+  assert.match(html, /data-action="glucose-edit" data-id="older-record"/);
+  assert.match(html, /1 di 200 misurazioni/);
+  assert.match(html, /Il CSV contiene tutte le misurazioni/);
+});
+
 test("The manual register renders an empty value and escapes imported free text", () => {
   const blank = glucose({
     state: { glucoseReadings: [] },
@@ -206,7 +245,7 @@ test("Changing the history period preserves the in-memory form draft and edit id
       },
     },
   };
-  for (const period of [7, 30]) {
+  for (const period of [7, 30, "all"]) {
     ui.glucose.period = period;
     const html = glucose({ state: { glucoseReadings: [item] }, ui });
     assert.match(html, /name="date"[^>]*value="2026-10-01"/);

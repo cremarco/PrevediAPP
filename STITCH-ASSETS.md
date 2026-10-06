@@ -1,5 +1,7 @@
 # Asset delle ricompense Stitch
 
+La famiglia corrente delle nove immagini è stata rigenerata nello stile Terra: [asset e prompt v2](REWARD-ASSETS.md). Questo documento conserva la provenienza delle versioni precedenti.
+
 Estensione del 6 ottobre 2026. Il catalogo conserva le tre scene del Giardino già presenti e aggiunge sei oggetti alle collezioni Natura e Inverno. Le immagini sono locali; daisyUI `avatar` e `card` ne gestiscono la presentazione. Selezionare un nuovo oggetto mostra la sua anteprima accanto all’Alberello, senza promettere una trasformazione 3D.
 
 ## Illustrazioni nuove
